@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 20px;
+      background-color: #FDFCDC;
+    }
+
+    h1 {
+      color: #0081A7;
+    }
+
+    #task-form, #analytics {
+      margin-bottom: 20px;
+      padding: 20px;
+      background-color: #FFFFFF;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      border: 1px solid #F07167;
+      border-radius: 5px;
+    }
+
+    #tasks-output {
+      margin-top: 20px;
+    }
+
+    .task-item {
+      padding: 10px;
+      border: 1px solid #00AFB9;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      background-color: #FED9B7;
+    }
+
+    #analytics {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Task Manager</h1>
+
+  <div id="task-form">
+    <form id="add-task-form">
+      <input type="text" id="title" placeholder="Task Title" required>
+      <label>
+        <input type="checkbox" id="urgency"> Urgent
+      </label>
+      <label>
+        <input type="checkbox" id="importance"> Important
+      </label>
+      <input type="number" id="estimatedTime" placeholder="Estimated Time (minutes)" required>
+      <label>
+        <input type="checkbox" id="recurring"> Recurring
+      </label>
+      <button type="submit">Add Task</button>
+    </form>
+    <input type="text" id="search" placeholder="Search tasks..." oninput="renderTasks()">
+  </div>
+
+  <div id="tasks-output"></div>
+
+  <div id="analytics">
+    <h2>Task Analytics</h2>
+    <p id="progress">Progress: 0%</p>
+    <p id="totalTasks">Total Tasks: <span id="taskCount">0</span></p>
+    <button onclick="exportTasks()">Export Tasks</button>
+    <input type="file" id="importFile" onchange="importTasks(event)" accept=".json">
+  </div>
+
+  <script>
+    function getTasksFromLocalStorage() {
+      return JSON.parse(localStorage.getItem('tasks')) || [];
+    }
+
+    function saveTasksToLocalStorage(tasks) {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+      calculateProgress(); // Update progress whenever tasks are saved
+    }
+
+    function renderTasks() {
+      const tasksOutput = document.getElementById('tasks-output');
+      tasksOutput.innerHTML = '';
+      const tasks = getTasksFromLocalStorage();
+      const searchTerm = document.getElementById('search').value.toLowerCase();
+
+      const filteredTasks = tasks.filter(task => task.title.toLowerCase().includes(searchTerm));
+
+      filteredTasks.forEach((task, index) => {
+        const taskItem = document.createElement('div');
+        taskItem.className = 'task-item';
+        taskItem.innerHTML = `
+          <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleCompletion(${index})"> 
+          <strong>Title:</strong> ${task.title} <br>
+          <strong>Urgent:</strong> ${task.urgent ? 'Yes' : 'No'} <br>
+          <strong>Important:</strong> ${task.important ? 'Yes' : 'No'} <br>
+          <strong>Estimated Time:</strong> ${task.estimatedTime} minutes <br>
+          <strong>Recurring:</strong> ${task.recurring ? 'Yes' : 'No'} <br>
+          <button onclick="editTask(${index})">Edit</button>
+        `;
+        tasksOutput.appendChild(taskItem);
+      });
+
+      document.getElementById('taskCount').innerText = tasks.length;
+    }
+
+    function editTask(index) {
+      const tasks = getTasksFromLocalStorage();
+      const task = tasks[index];
+
+      document.getElementById('title').value = task.title;
+      document.getElementById('urgency').checked = task.urgent;
+      document.getElementById('importance').checked = task.important;
+      document.getElementById('estimatedTime').value = task.estimatedTime;
+      document.getElementById('recurring').checked = task.recurring;
+
+      const button = document.querySelector('#add-task-form button');
+      button.innerText = 'Update Task';
+      button.setAttribute('data-index', index); // Store index in button for updating
+    }
+
+    document.getElementById('add-task-form').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const title = document.getElementById('title').value;
+      const urgency = document.getElementById('urgency').checked;
+      const importance = document.getElementById('importance').checked;
+      const estimatedTime = document.getElementById('estimatedTime').value;
+      const recurring = document.getElementById('recurring').checked;
+
+      const tasks = getTasksFromLocalStorage();
+      const button = this.querySelector('button');
+
+      if (button.dataset.index !== undefined) { // If it's an edit
+        const index = button.dataset.index;
+        tasks[index] = { title, urgent: urgency, important: importance, estimatedTime, recurring, completed: false };
+        button.removeAttribute('data-index'); // Clear the index
+        button.innerText = 'Add Task'; // Reset button text
+      } else {
+        tasks.push({ title, urgent: urgency, important: importance, estimatedTime, recurring, completed: false });
+      }
+
+      saveTasksToLocalStorage(tasks);
+      renderTasks();
+
+      // Clear the form
+      this.reset();
+    });
+
+    function toggleCompletion(index) {
+      const tasks = getTasksFromLocalStorage();
+      tasks[index].completed = !tasks[index].completed;
+      saveTasksToLocalStorage(tasks);
+      renderTasks();
+    }
+
+    function calculateProgress() {
+      const tasks = getTasksFromLocalStorage();
+      const completedTasks = tasks.filter(task => task.completed).length;
+      const progress = (completedTasks / tasks.length) * 100 || 0; // Avoid division by zero
+      document.getElementById('progress').innerText = `Progress: ${progress.toFixed(2)}%`;
+    }
+
+    function exportTasks() {
+      const tasks = getTasksFromLocalStorage();
+      const blob = new Blob([JSON.stringify(tasks)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tasks.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function importTasks(event) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const tasks = JSON.parse(e.target.result);
+        saveTasksToLocalStorage(tasks);
+        renderTasks();
+      };
+      reader.readAsText(file);
+    }
+
+    // Initial load
+    renderTasks();
+  </script>
+</body>
+</html>
