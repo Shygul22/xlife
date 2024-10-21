@@ -6,46 +6,119 @@
   <title>Task Manager</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      padding: 20px;
-      background-color: #FDFCDC;
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 20px;
+    background-color: #FDFCDC;
+    color: #333; /* Default text color for better readability */
+}
+
+h1 {
+    color: #0081A7;
+    font-size: 2.5em; /* Increased font size for better emphasis */
+    text-align: center; /* Centering the header */
+    margin-bottom: 20px; /* Adding some space below the header */
+}
+
+#task-form, #analytics {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #FFFFFF;
+    border-radius: 8px; /* Slightly increased border radius for a softer look */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Enhanced shadow for more depth */
+    transition: transform 0.2s; /* Smooth transition for hover effect */
+}
+
+#task-form:hover, #analytics:hover {
+    transform: scale(1.02); /* Slightly enlarges the element on hover */
+}
+
+input, button {
+    padding: 12px; /* Increased padding for better touch targets */
+    margin: 5px 0;
+    border: 1px solid #F07167;
+    border-radius: 5px;
+    width: calc(100% - 14px); /* Full width minus padding for consistent layout */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Inner shadow for depth */
+    transition: border-color 0.2s; /* Transition for border color */
+}
+
+input:focus, button:focus {
+    border-color: #0081A7; /* Highlight border color on focus */
+    outline: none; /* Remove default outline */
+}
+
+button {
+    background-color: #0081A7; /* Button background color */
+    color: #FFFFFF; /* Button text color */
+    cursor: pointer; /* Change cursor to pointer */
+    font-weight: bold; /* Bold text for better visibility */
+}
+
+button:hover {
+    background-color: #00AFB9; /* Change background color on hover */
+}
+
+#tasks-output {
+    margin-top: 20px;
+}
+
+.task-item {
+    padding: 15px; /* Increased padding for better spacing */
+    border: 1px solid #00AFB9;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: #FED9B7;
+    transition: transform 0.2s; /* Smooth transition for hover effect */
+}
+
+.task-item:hover {
+    transform: translateY(-2px); /* Slightly lifts the item on hover */
+}
+
+#analytics {
+    margin-top: 20px;
+    background-color: #F9F9F9; /* Light grey background for analytics section */
+    padding: 15px; /* Slightly reduced padding for a compact look */
+    border: 1px solid #00AFB9; /* Added border to separate from the background */
+    border-radius: 5px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    body {
+        margin: 10px; /* Reduce margin on smaller screens */
+        padding: 10px; /* Reduce padding on smaller screens */
     }
 
     h1 {
-      color: #0081A7;
+        font-size: 2em; /* Smaller font size for smaller screens */
     }
 
     #task-form, #analytics {
-      margin-bottom: 20px;
-      padding: 20px;
-      background-color: #FFFFFF;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 15px; /* Slightly reduced padding */
     }
 
     input, button {
-      padding: 10px;
-      margin: 5px 0;
-      border: 1px solid #F07167;
-      border-radius: 5px;
-    }
-
-    #tasks-output {
-      margin-top: 20px;
+        padding: 10px; /* Slightly reduced padding for smaller screens */
+        width: 100%; /* Full width for better layout */
     }
 
     .task-item {
-      padding: 10px;
-      border: 1px solid #00AFB9;
-      border-radius: 5px;
-      margin-bottom: 10px;
-      background-color: #FED9B7;
+        padding: 12px; /* Adjust padding for task items */
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.5em; /* Even smaller font size for very small screens */
     }
 
-    #analytics {
-      margin-top: 20px;
+    #task-form, #analytics {
+        margin: 10px; /* Further reduce margin for very small screens */
     }
+}
+
   </style>
 </head>
 <body>
