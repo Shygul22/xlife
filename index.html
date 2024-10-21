@@ -163,6 +163,7 @@
       tasks[index].completed = !tasks[index].completed;
       saveTasksToLocalStorage(tasks);
       renderTasks();
+      calculateProgress(); // Update progress after toggling completion
     }
 
     function calculateProgress() {
