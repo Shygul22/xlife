@@ -3,274 +3,233 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
   <title>Task Manager</title>
-  <style>
+</head>
+<body>
+    <h1>Task Manager</h1>
+
+    <div id="task-form">
+      <form id="add-task-form">
+        <label for="title">Task Title:</label>
+        <input type="text" id="title" required>
+  
+        <label for="urgency">Urgent:</label>
+        <input type="checkbox" id="urgency">
+  
+        <label for="importance">Important:</label>
+        <input type="checkbox" id="importance">
+  
+        <label for="estimatedTime">Estimated Time (minutes):</label>
+        <input type="number" id="estimatedTime" min="1" required>
+
+        <label for="inProgress">In Progress:</label>
+        <input type="checkbox" id="inProgress">
+
+        <label for="completed">Completed:</label>
+        <input type="checkbox" id="completed">
+  
+        <button type="submit">Add Task</button>
+      </form>
+    </div>
+  
+    <div id="tasks-output"></div>
+
+    <script>
+       
+    // Sample taskManager object for demonstration
+    window.taskManager = {
+        tasks: [],
+
+        addTask: function(task) {
+            this.tasks.push(task);
+            console.log("Task added:", task); // Debugging
+        },
+
+        prioritizeTasks: function() {
+            return this.tasks.sort((a, b) => (b.urgency ? 1 : 0) - (a.urgency ? 1 : 0));
+        },
+
+        eatTheFrog: function() {
+            return this.tasks.find(task => task.urgency && !task.completed);
+        },
+
+        applyRuleOfThree: function() {
+            return this.tasks.slice(0, 3);
+        },
+
+        deepWorkTasks: function() {
+            return this.tasks.filter(task => !task.inProgress && !task.completed);
+        },
+
+        applyEisenhowerMatrix: function() {
+            return {
+                importantUrgent: this.tasks.filter(task => task.importance && task.urgency),
+                importantNotUrgent: this.tasks.filter(task => task.importance && !task.urgency),
+                notImportantUrgent: this.tasks.filter(task => !task.importance && task.urgency),
+                notImportantNotUrgent: this.tasks.filter(task => !task.importance && !task.urgency),
+            };
+        },
+
+        organizeKanban: function() {
+            return {
+                toDo: this.tasks.filter(task => !task.inProgress && !task.completed),
+                inProgress: this.tasks.filter(task => task.inProgress && !task.completed),
+                completed: this.tasks.filter(task => task.completed),
+            };
+        },
+
+        timeBlocking: function() {
+            return this.tasks.map(task => `Task: ${task.title}, Time: ${task.estimatedTime} minutes`);
+        },
+
+        // New method to get the first task based on productivity techniques
+        getFirstProductivityTask: function() {
+            // You can change the criteria based on your preferred technique
+            return this.eatTheFrog() || this.applyRuleOfThree()[0] || null;
+        }
+    };
+
+    function renderTasks() {
+        const tasksOutput = document.getElementById("tasks-output");
+        const prioritizedTasks = taskManager.prioritizeTasks() || [];
+        let taskHTML = "<h2>Prioritized Tasks</h2>";
+
+        if (prioritizedTasks.length > 0) {
+            prioritizedTasks.forEach(task => {
+                taskHTML += `<div class="task-item"><strong>${task.title}</strong> - Urgent: ${task.urgency}, Important: ${task.importance}, Estimated Time: ${task.estimatedTime} minutes</div>`;
+            });
+        } else {
+            taskHTML += "<p>No tasks available.</p>";
+        }
+
+        // Display the first productivity task
+        const firstProductivityTask = taskManager.getFirstProductivityTask();
+        taskHTML += `<h3>First Productivity Task: ${firstProductivityTask ? firstProductivityTask.title : 'None'}</h3>`;
+
+        const frogTask = taskManager.eatTheFrog();
+        taskHTML += `<h3>Eat the Frog Task: ${frogTask ? frogTask.title : 'None'}</h3>`;
+
+        const ruleOfThreeTasks = taskManager.applyRuleOfThree() || [];
+        taskHTML += `<h3>Rule of Three Tasks: ${ruleOfThreeTasks.length ? ruleOfThreeTasks.map(task => task.title).join(", ") : 'None'}</h3>`;
+
+        const deepWorkTasks = taskManager.deepWorkTasks() || [];
+        taskHTML += `<h3>Deep Work Tasks: ${deepWorkTasks.length ? deepWorkTasks.map(task => task.title).join(", ") : 'None'}</h3>`;
+
+        const quadrants = taskManager.applyEisenhowerMatrix();
+        if (quadrants) {
+            taskHTML += `<h2>Eisenhower Matrix</h2>
+                <div>Important & Urgent: ${quadrants.importantUrgent.map(task => task.title).join(", ") || 'None'}</div>
+                <div>Important & Not Urgent: ${quadrants.importantNotUrgent.map(task => task.title).join(", ") || 'None'}</div>
+                <div>Not Important & Urgent: ${quadrants.notImportantUrgent.map(task => task.title).join(", ") || 'None'}</div>
+                <div>Not Important & Not Urgent: ${quadrants.notImportantNotUrgent.map(task => task.title).join(", ") || 'None'}</div>`;
+        } else {
+            taskHTML += "<h2>Eisenhower Matrix</h2><p>No tasks available for matrix.</p>";
+        }
+
+        const kanbanBoard = taskManager.organizeKanban();
+        if (kanbanBoard) {
+            taskHTML += `<h2>Kanban Board</h2>
+                <div>To Do: ${kanbanBoard.toDo.map(task => task.title).join(", ") || 'None'}</div>
+                <div>In Progress: ${kanbanBoard.inProgress.map(task => task.title).join(", ") || 'None'}</div>
+                <div>Completed: ${kanbanBoard.completed.map(task => task.title).join(", ") || 'None'}</div>`;
+        } else {
+            taskHTML += "<h2>Kanban Board</h2><p>No tasks available for Kanban board.</p>";
+        }
+
+        const timeBlocks = taskManager.timeBlocking() || [];
+        if (timeBlocks.length > 0) {
+            taskHTML += `<h2>Time Blocking</h2>${timeBlocks.join("<br>")}`;
+        } else {
+            taskHTML += "<h2>Time Blocking</h2><p>No time blocks available.</p>";
+        }
+
+        tasksOutput.innerHTML = taskHTML;
+    }
+
+    document.getElementById("add-task-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        
+        const title = document.getElementById("title").value;
+        const urgency = document.getElementById("urgency").checked;
+        const importance = document.getElementById("importance").checked;
+        const estimatedTime = parseInt(document.getElementById("estimatedTime").value);
+        const inProgress = false;
+        const completed = false;
+        
+        taskManager.addTask({ title, urgency, importance, estimatedTime, inProgress, completed });
+        this.reset();
+        renderTasks();
+    });
+</script>
+
+   
+</body>
+</html>
+
+<style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    padding: 20px;
-    background-color: #FDFCDC;
-    color: #333; /* Default text color for better readability */
-}
-
-h1 {
-    color: #0081A7;
-    font-size: 2.5em; /* Increased font size for better emphasis */
-    text-align: center; /* Centering the header */
-    margin-bottom: 20px; /* Adding some space below the header */
-}
-
-#task-form, #analytics {
-    margin-bottom: 20px;
-    padding: 20px;
-    background-color: #FFFFFF;
-    border-radius: 8px; /* Slightly increased border radius for a softer look */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Enhanced shadow for more depth */
-    transition: transform 0.2s; /* Smooth transition for hover effect */
-}
-
-#task-form:hover, #analytics:hover {
-    transform: scale(1.02); /* Slightly enlarges the element on hover */
-}
-
-input, button {
-    padding: 12px; /* Increased padding for better touch targets */
-    margin: 5px 0;
-    border: 1px solid #F07167;
-    border-radius: 5px;
-    width: calc(100% - 14px); /* Full width minus padding for consistent layout */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Inner shadow for depth */
-    transition: border-color 0.2s; /* Transition for border color */
-}
-
-input:focus, button:focus {
-    border-color: #0081A7; /* Highlight border color on focus */
-    outline: none; /* Remove default outline */
-}
-
-button {
-    background-color: #0081A7; /* Button background color */
-    color: #FFFFFF; /* Button text color */
-    cursor: pointer; /* Change cursor to pointer */
-    font-weight: bold; /* Bold text for better visibility */
-}
-
-button:hover {
-    background-color: #00AFB9; /* Change background color on hover */
-}
-
-#tasks-output {
-    margin-top: 20px;
-}
-
-.task-item {
-    padding: 15px; /* Increased padding for better spacing */
-    border: 1px solid #00AFB9;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    background-color: #FED9B7;
-    transition: transform 0.2s; /* Smooth transition for hover effect */
-}
-
-.task-item:hover {
-    transform: translateY(-2px); /* Slightly lifts the item on hover */
-}
-
-#analytics {
-    margin-top: 20px;
-    background-color: #F9F9F9; /* Light grey background for analytics section */
-    padding: 15px; /* Slightly reduced padding for a compact look */
-    border: 1px solid #00AFB9; /* Added border to separate from the background */
-    border-radius: 5px;
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-    body {
-        margin: 10px; /* Reduce margin on smaller screens */
-        padding: 10px; /* Reduce padding on smaller screens */
+      font-family: Arial, sans-serif;
+      background-color: #fdfcdc;
+      color: #333;
+      padding: 20px;
+      line-height: 1.6;
     }
 
     h1 {
-        font-size: 2em; /* Smaller font size for smaller screens */
+      color: #0081A7;
     }
 
-    #task-form, #analytics {
-        padding: 15px; /* Slightly reduced padding */
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    input, button {
-        padding: 10px; /* Slightly reduced padding for smaller screens */
-        width: 100%; /* Full width for better layout */
+    label, input[type="text"], input[type="number"], input[type="checkbox"] {
+      width: 100%;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #00AFB9;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0081A7;
     }
 
     .task-item {
-        padding: 12px; /* Adjust padding for task items */
-    }
-}
-
-@media (max-width: 480px) {
-    h1 {
-        font-size: 1.5em; /* Even smaller font size for very small screens */
-    }
-
-    #task-form, #analytics {
-        margin: 10px; /* Further reduce margin for very small screens */
-    }
-}
-
-  </style>
-</head>
-<body>
-  <h1>Task Manager</h1>
-
-  <div id="task-form">
-    <form id="add-task-form">
-      <input type="text" id="title" placeholder="Task Title" required>
-      <label>
-        <input type="checkbox" id="urgency"> Urgent
-      </label>
-      <label>
-        <input type="checkbox" id="importance"> Important
-      </label>
-      <input type="number" id="estimatedTime" placeholder="Estimated Time (minutes)" required>
-      <label>
-        <input type="checkbox" id="recurring"> Recurring
-      </label>
-      <button type="submit">Add Task</button>
-    </form>
-    <input type="text" id="search" placeholder="Search tasks..." oninput="renderTasks()">
-  </div>
-
-  <div id="tasks-output"></div>
-
-  <div id="analytics">
-    <h2>Task Analytics</h2>
-    <p id="progress">Progress: 0%</p>
-    <p id="totalTasks">Total Tasks: <span id="taskCount">0</span></p>
-    <button onclick="exportTasks()">Export Tasks</button>
-    <input type="file" id="importFile" onchange="importTasks(event)" accept=".json">
-  </div>
-
-  <script>
-    function getTasksFromLocalStorage() {
-      return JSON.parse(localStorage.getItem('tasks')) || [];
+      padding: 15px;
+      background-color: #FED9B7;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    function saveTasksToLocalStorage(tasks) {
-      localStorage.setItem('tasks', JSON.stringify(tasks));
-      calculateProgress(); // Update progress whenever tasks are saved
+    .task-item strong {
+      color: #F07167;
     }
 
-    function renderTasks() {
-      const tasksOutput = document.getElementById('tasks-output');
-      tasksOutput.innerHTML = '';
-      const tasks = getTasksFromLocalStorage();
-      const searchTerm = document.getElementById('search').value.toLowerCase();
-
-      const filteredTasks = tasks.filter(task => task.title.toLowerCase().includes(searchTerm));
-
-      filteredTasks.forEach((task, index) => {
-        const taskItem = document.createElement('div');
-        taskItem.className = 'task-item';
-        taskItem.innerHTML = `
-          <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleCompletion(${index})"> 
-          <strong>Title:</strong> ${task.title} <br>
-          <strong>Urgent:</strong> ${task.urgent ? 'Yes' : 'No'} <br>
-          <strong>Important:</strong> ${task.important ? 'Yes' : 'No'} <br>
-          <strong>Estimated Time:</strong> ${task.estimatedTime} minutes <br>
-          <strong>Recurring:</strong> ${task.recurring ? 'Yes' : 'No'} <br>
-          <button onclick="editTask(${index})">Edit</button>
-        `;
-        tasksOutput.appendChild(taskItem);
-      });
-
-      document.getElementById('taskCount').innerText = tasks.length;
-    }
-
-    function editTask(index) {
-      const tasks = getTasksFromLocalStorage();
-      const task = tasks[index];
-
-      document.getElementById('title').value = task.title;
-      document.getElementById('urgency').checked = task.urgent;
-      document.getElementById('importance').checked = task.important;
-      document.getElementById('estimatedTime').value = task.estimatedTime;
-      document.getElementById('recurring').checked = task.recurring;
-
-      const button = document.querySelector('#add-task-form button');
-      button.innerText = 'Update Task';
-      button.setAttribute('data-index', index); // Store index in button for updating
-    }
-
-    document.getElementById('add-task-form').addEventListener('submit', function(event) {
-      event.preventDefault();
-
-      const title = document.getElementById('title').value;
-      const urgency = document.getElementById('urgency').checked;
-      const importance = document.getElementById('importance').checked;
-      const estimatedTime = document.getElementById('estimatedTime').value;
-      const recurring = document.getElementById('recurring').checked;
-
-      const tasks = getTasksFromLocalStorage();
-      const button = this.querySelector('button');
-
-      if (button.dataset.index !== undefined) { // If it's an edit
-        const index = button.dataset.index;
-        tasks[index] = { title, urgent: urgency, important: importance, estimatedTime, recurring, completed: false };
-        button.removeAttribute('data-index'); // Clear the index
-        button.innerText = 'Add Task'; // Reset button text
-      } else {
-        tasks.push({ title, urgent: urgency, important: importance, estimatedTime, recurring, completed: false });
+    @media (max-width: 600px) {
+      form {
+        flex-direction: column;
       }
 
-      saveTasksToLocalStorage(tasks);
-      renderTasks();
-
-      // Clear the form
-      this.reset();
-    });
-
-    function toggleCompletion(index) {
-      const tasks = getTasksFromLocalStorage();
-      tasks[index].completed = !tasks[index].completed;
-      saveTasksToLocalStorage(tasks);
-      renderTasks();
-      calculateProgress(); // Update progress after toggling completion
+      .task-item {
+        flex-direction: column;
+      }
     }
-
-    function calculateProgress() {
-      const tasks = getTasksFromLocalStorage();
-      const completedTasks = tasks.filter(task => task.completed).length;
-      const progress = (completedTasks / tasks.length) * 100 || 0; // Avoid division by zero
-      document.getElementById('progress').innerText = `Progress: ${progress.toFixed(2)}%`;
-    }
-
-    function exportTasks() {
-      const tasks = getTasksFromLocalStorage();
-      const blob = new Blob([JSON.stringify(tasks)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'tasks.json';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-
-    function importTasks(event) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const tasks = JSON.parse(e.target.result);
-        saveTasksToLocalStorage(tasks);
-        renderTasks();
-      };
-      reader.readAsText(file);
-    }
-
-    // Initial load
-    renderTasks();
-  </script>
-</body>
-</html>
+</style>
