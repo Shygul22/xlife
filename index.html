@@ -3,284 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Manager</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #fdfcdc;
-            color: #333;
-            padding: 20px;
-            line-height: 1.6;
-        }
-
-        h1 {
-            color: #0081A7;
-        }
-
-        form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        label, input[type="text"], input[type="number"], input[type="checkbox"], input[type="date"] {
-            width: 100%;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #00AFB9;
-            border: none;
-            color: white;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #0081A7;
-        }
-
-        .task-item {
-            padding: 15px;
-            background-color: #FED9B7;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .task-item strong {
-            color: #F07167;
-        }
-
-        .task-actions {
-            display: flex;
-            gap: 5px;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 600px) {
-            form {
-                flex-direction: column;
-            }
-
-            .task-item {
-                flex-direction: column;
-            }
-        }
-    </style>
+    <title>Register Form</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Task Manager</h1>
-
-    <div id="task-form">
-        <form id="add-task-form">
-            <label for="title">Task Title:</label>
-            <input type="text" id="title" required>
-
-            <label for="urgency">Urgent:</label>
-            <input type="checkbox" id="urgency">
-
-            <label for="importance">Important:</label>
-            <input type="checkbox" id="importance">
-
-            <label for="estimatedTime">Estimated Time (minutes):</label>
-            <input type="number" id="estimatedTime" min="1" required>
-
-            <label for="dueDate">Due Date (IST):</label>
-            <input type="date" id="dueDate" required>
-
-            <button type="submit">Add Task</button>
+    <div class="container">
+        <form action="https://sheetdb.io/api/v1/a3pjtqjwh0zsx" method="post">
+            <h2>IOT-BASED WATER QUALITY MONITORING FOR MUNICIPAL TANKS</h2>
+            <h2>Register Form</h2>
+            <div class="form-group">
+                <label for="fname">Name</label>
+                <input type="text"  name="data[name]" placeholder="Your name.." required>
+            </div>
+            <div class="form-group">
+                <label for="number">Mobile Number</label>
+                <input type="tel"  name="data[mobile_number]" placeholder="Your Mobile Number.." pattern="[0-9]{10}" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Submit</button>
+            </div>
         </form>
     </div>
-
-    <div id="tasks-output"></div>
-
-    <script>
-        window.taskManager = {
-            tasks: [],
-            editingIndex: null, // Added for tracking editing state
-
-            addTask: function(task) {
-                task.technique = this.assignTechnique(task);
-                this.tasks.push(task);
-                this.saveTasks();
-                this.renderTasks();
-            },
-
-            assignTechnique: function(task) {
-                if (task.urgency && task.importance) {
-                    return "Eisenhower Matrix";
-                } else if (task.urgency) {
-                    return "Eat the Frog";
-                } else if (task.importance) {
-                    return "Time Blocking";
-                } else if (task.estimatedTime <= 2) {
-                    return "The Two-Minute Rule";
-                } else {
-                    return "Kanban";
-                }
-            },
-
-            prioritizeTasks: function() {
-                return this.tasks.sort((a, b) => {
-                    if (a.technique === "Eisenhower Matrix") return -1;
-                    if (b.technique === "Eisenhower Matrix") return 1;
-                    if (a.technique === "Eat the Frog") return -1;
-                    if (b.technique === "Eat the Frog") return 1;
-                    if (a.urgency && !b.urgency) return -1;
-                    if (!a.urgency && b.urgency) return 1;
-                    return new Date(a.dueDate) - new Date(b.dueDate);
-                });
-            },
-
-            editTask: function(index, updatedTask) {
-                this.tasks[index] = { ...this.tasks[index], ...updatedTask };
-                this.saveTasks();
-                this.renderTasks();
-            },
-
-            deleteTask: function(index) {
-                this.tasks.splice(index, 1);
-                this.saveTasks();
-                this.renderTasks();
-            },
-
-            toggleCompletion: function(index) {
-                this.tasks[index].completed = !this.tasks[index].completed;
-                this.saveTasks();
-                this.renderTasks();
-            },
-
-            saveTasks: function() {
-                localStorage.setItem('tasks', JSON.stringify(this.tasks));
-            },
-
-            loadTasks: function() {
-                const storedTasks = JSON.parse(localStorage.getItem('tasks'));
-                if (storedTasks) {
-                    this.tasks = storedTasks.map(task => {
-                        const dueDate = new Date(task.dueDate);
-                        if (!task.completed && dueDate < new Date()) {
-                            dueDate.setDate(dueDate.getDate() + 1);
-                            task.dueDate = dueDate.toISOString().split('T')[0];
-                        }
-                        return task;
-                    });
-                } else {
-                    this.tasks = [
-                        { title: "Sleep", urgency: false, importance: true, estimatedTime: 480, dueDate: this.getDefaultDueDate(), completed: false },
-                        { title: "Eating", urgency: false, importance: true, estimatedTime: 120, dueDate: this.getDefaultDueDate(), completed: false },
-                        { title: "Compulsory Activities", urgency: false, importance: true, estimatedTime: 180, dueDate: this.getDefaultDueDate(), completed: false }
-                    ];
-                }
-                this.renderTasks();
-            },
-
-            getDefaultDueDate: function() {
-                const now = new Date();
-                now.setHours(0, 0, 0, 0);
-                return now.toISOString().split('T')[0];
-            },
-
-            setDefaultDueDate: function() {
-                const now = new Date();
-                now.setDate(now.getDate() + 1);
-                const dueDateInput = document.getElementById("dueDate");
-                dueDateInput.value = now.toISOString().split('T')[0];
-            },
-
-            renderTasks: function() {
-                const tasksOutput = document.getElementById("tasks-output");
-                const prioritizedTasks = this.prioritizeTasks() || [];
-                let taskHTML = "<h2>Prioritized Tasks</h2>";
-
-                if (prioritizedTasks.length > 0) {
-                    prioritizedTasks.forEach((task, index) => {
-                        taskHTML += `
-                            <div class="task-item" style="background-color: ${task.completed ? '#C4E1FF' : '#FED9B7'};">
-                                <strong>${task.title}</strong>
-                                <div>
-                                    Urgent: ${task.urgency ? 'Yes' : 'No'}, 
-                                    Important: ${task.importance ? 'Yes' : 'No'}, 
-                                    Estimated Time: ${task.estimatedTime} minutes,
-                                    Due Date: ${new Date(task.dueDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' })},
-                                    Technique: ${task.technique}
-                                </div>
-                                <div class="task-actions">
-                                    <button onclick="editTask(${index})">Edit</button>
-                                    <button onclick="deleteTask(${index})">Delete</button>
-                                    <button onclick="toggleCompletion(${index})">
-                                        ${task.completed ? 'Unmark Complete' : 'Mark Complete'}
-                                    </button>
-                                </div>
-                            </div>`;
-                    });
-                } else {
-                    taskHTML += "<p>No tasks available.</p>";
-                }
-
-                const firstPriorityTask = this.getFirstPriorityTask();
-                taskHTML += `<h3>First Priority Task: ${firstPriorityTask ? firstPriorityTask.title : 'None'}</h3>`;
-
-                tasksOutput.innerHTML = taskHTML;
-            },
-
-            getFirstPriorityTask: function() {
-                const prioritizedTasks = this.prioritizeTasks();
-                return prioritizedTasks.length > 0 ? prioritizedTasks[0] : null;
-            }
-        };
-
-        document.addEventListener("DOMContentLoaded", function() {
-            window.taskManager.setDefaultDueDate();
-            window.taskManager.loadTasks();
-        });
-
-        document.getElementById("add-task-form").addEventListener("submit", function(event) {
-            event.preventDefault();
-
-            const title = document.getElementById("title").value;
-            const urgency = document.getElementById("urgency").checked;
-            const importance = document.getElementById("importance").checked;
-            const estimatedTime = parseInt(document.getElementById("estimatedTime").value);
-            const dueDate = document.getElementById("dueDate").value;
-
-            const newTask = { title, urgency, importance, estimatedTime, dueDate, completed: false };
-            if (window.taskManager.editingIndex !== null) {
-                window.taskManager.editTask(window.taskManager.editingIndex, newTask);
-                window.taskManager.editingIndex = null; // Reset editing index after edit
-            } else {
-                window.taskManager.addTask(newTask);
-            }
-
-            document.getElementById("add-task-form").reset();
-            window.taskManager.setDefaultDueDate();
-        });
-
-        window.editTask = function(index) {
-            const task = window.taskManager.tasks[index];
-            document.getElementById("title").value = task.title;
-            document.getElementById("urgency").checked = task.urgency;
-            document.getElementById("importance").checked = task.importance;
-            document.getElementById("estimatedTime").value = task.estimatedTime;
-            document.getElementById("dueDate").value = task.dueDate;
-            window.taskManager.editingIndex = index; // Set editing index
-        };
-
-        window.deleteTask = function(index) {
-            window.taskManager.deleteTask(index);
-        };
-
-        window.toggleCompletion = function(index) {
-            window.taskManager.toggleCompletion(index);
-        };
-    </script>
+    <div>
+        <h2> Step 1 to scan the register form  </h2>
+            <h2> Step 2 test the water in case the turbidity sensor data is too high</h2>
+            <h2>Step 3 receive the sms & call</h2>
+           
+    </div>
 </body>
 </html>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #f0f4f8;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    width: 90%;
+    max-width: 500px;
+    background-color: #023047;
+    padding: 20px;
+    border-radius: 10px;
+    color: #ffb703;
+}
+
+h2 {
+    text-align: center;
+    color: #03ffd5;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="tel"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #04AA6D;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+button:hover {
+    background-color: #039a5e;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 600px) {
+    .container {
+        padding: 15px;
+    }
+
+    h2 {
+        font-size: 1.2em;
+    }
+}
+</style>
