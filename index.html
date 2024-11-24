@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Prioritization Tool</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="flex-container">
+        <h1>Task Prioritization Tool</h1>
+        <form id="task-form" class="flex-form">
+            <div class="form-group">
+                <input type="text" id="task-name" placeholder="Task Name" required>
+            </div>
+            <div class="form-group">
+                <label for="urgency">Urgency:</label>
+                <select id="urgency" required>
+                    <option value="" disabled selected>Select Urgency</option>
+                    <option value="1">1 - Low</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5 - High</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="importance">Importance:</label>
+                <select id="importance" required>
+                    <option value="" disabled selected>Select Importance</option>
+                    <option value="1">1 - Low</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5 - High</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="effort">Effort (hours):</label>
+                <input type="number" id="effort" min="0.5" max="24" step="0.5" required>
+            </div>
+            <button type="submit">Add Task</button>
+        </form>
+        <div id="task-list" class="flex-list"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+<style>
+    /* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #fdfcdc;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    flex-direction: column;
+    text-align: center; /* Center text */
+}
+
+.flex-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    width: 100%;
+    padding: 20px;
+}
+
+h1 {
+    color: #0081a7;
+}
+
+.flex-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 600px; /* Ensure form doesn't stretch too wide */
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+form label {
+    font-weight: bold;
+    color: #00afb9;
+}
+
+input, select, button {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+select {
+    width: 100%;
+}
+
+button {
+    background-color: #f07167;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #fed9b7;
+}
+
+.flex-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 800px;
+    padding: 10px;
+}
+
+.task-item {
+    padding: 15px;
+    background-color: #e8f0fe;
+    border-left: 5px solid #0081a7;
+    border-radius: 5px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: transform 0.3s ease-in-out;
+}
+
+.task-item:hover {
+    transform: scale(1.05);
+}
+
+</style>
+
+<script>
+    // Array to Store Tasks
+    let tasks = [];
+    
+    // Function to Save Tasks to Cookies
+    function saveTasksToCookies() {
+        document.cookie = "tasks=" + JSON.stringify(tasks) + "; path=/; max-age=" + (60 * 60 * 24 * 7); // Cookie valid for 7 days
+    }
+    
+    // Function to Load Tasks from Cookies
+    function loadTasksFromCookies() {
+        const cookies = document.cookie.split("; ");
+        for (let cookie of cookies) {
+            const [name, value] = cookie.split("=");
+            if (name === "tasks") {
+                tasks = JSON.parse(value);
+                break;
+            }
+        }
+    }
+    
+    // Event Listener for Form Submission
+    document.getElementById('task-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+    
+        // Get Task Details
+        const name = document.getElementById('task-name').value;
+        const urgency = parseInt(document.getElementById('urgency').value);
+        const importance = parseInt(document.getElementById('importance').value);
+        const effort = parseFloat(document.getElementById('effort').value); // Updated to handle float values
+    
+        // Validate Task Name
+        if (!name.trim()) {
+            alert('Please provide a valid task name!');
+            return;
+        }
+    
+        // Create Task Object
+        const task = { 
+            name, 
+            urgency, 
+            importance, 
+            effort, 
+            priorityScore: 0
+        };
+    
+        // Add to Tasks Array
+        tasks.push(task);
+    
+        // Save Tasks to Cookies
+        saveTasksToCookies();
+    
+        // Reset Form
+        document.getElementById('task-form').reset();
+    
+        // Update Task List
+        updateTaskList();
+    });
+    
+    // Function to Update Task List
+    function updateTaskList() {
+        // Calculate Priority Score and Sort Tasks
+        tasks.forEach(task => {
+            task.priorityScore = 
+                0.5 * task.importance + 
+                0.4 * task.urgency - 
+                0.1 * task.effort;
+        });
+        tasks.sort((a, b) => b.priorityScore - a.priorityScore);
+    
+        // Display Tasks
+        const taskList = document.getElementById('task-list');
+        taskList.innerHTML = ''; // Clear Existing Tasks
+        tasks.forEach((task, index) => {
+            const taskDiv = document.createElement('div');
+            taskDiv.classList.add('task-item');
+            taskDiv.innerHTML = `
+                <strong>${task.name}</strong><br>
+                Urgency: ${task.urgency}, Importance: ${task.importance}, 
+                Effort: ${task.effort} hrs<br>
+                Priority Score: ${task.priorityScore.toFixed(2)}<br>
+                <button onclick="deleteTask(${index})">Delete Task</button>
+            `;
+            taskList.appendChild(taskDiv);
+        });
+    }
+    
+    // Function to Delete Task
+    function deleteTask(index) {
+        tasks.splice(index, 1);
+        // Save the updated tasks to cookies after deletion
+        saveTasksToCookies();
+        updateTaskList();
+    }
+    
+    // Load tasks from cookies when the page loads
+    window.onload = function() {
+        loadTasksFromCookies();
+        updateTaskList();
+    };
+</script>
