@@ -4,18 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Prioritization Tool</title>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <div class="flex-container">
-        <h1>Task Prioritization Tool</h1>
-        <form id="task-form" class="flex-form">
-            <div class="form-group">
-                <input type="text" id="task-name" placeholder="Task Name" required>
+<body class="bg-gray-100 text-gray-900 font-sans">
+
+    
+    <div class="container mx-auto p-6">
+        <!-- Search Input Field -->
+        <div class="flex justify-between mb-4">
+            <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="filterTasks()"
+                   class="w-full p-2 border border-gray-300 rounded-lg shadow-sm">
+        </div>
+
+        <h1 class="text-3xl font-semibold text-center mb-6">Task Prioritization Tool</h1>
+
+        <!-- Toggle View Buttons -->
+        <div class="flex justify-center mb-4">
+            <button onclick="toggleView('list')" class="bg-blue-500 text-white p-2 rounded-lg mr-4 hover:bg-blue-600 transition duration-200">List View</button>
+            <button onclick="toggleView('grid')" class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition duration-200">Grid View</button>
+        </div>
+
+        <!-- Task Form -->
+        <form id="task-form" class="space-y-4">
+            <div class="space-y-2">
+                <input type="text" id="task-name" placeholder="Task Name" required
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
             </div>
-            <div class="form-group">
-                <label for="urgency">Urgency:</label>
-                <select id="urgency" required>
+            <div class="space-y-2">
+                <label for="urgency" class="block text-sm font-medium">Urgency:</label>
+                <select id="urgency" required
+                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
                     <option value="" disabled selected>Select Urgency</option>
                     <option value="1">1 - Low</option>
                     <option value="2">2</option>
@@ -24,9 +42,10 @@
                     <option value="5">5 - High</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="importance">Importance:</label>
-                <select id="importance" required>
+            <div class="space-y-2">
+                <label for="importance" class="block text-sm font-medium">Importance:</label>
+                <select id="importance" required
+                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
                     <option value="" disabled selected>Select Importance</option>
                     <option value="1">1 - Low</option>
                     <option value="2">2</option>
@@ -35,38 +54,51 @@
                     <option value="5">5 - High</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="effort">Effort (hours):</label>
-                <input type="number" id="effort" min="0.5" max="24" step="0.5" required>
+            <div class="space-y-2">
+                <label for="effort" class="block text-sm font-medium">Effort (hours):</label>
+                <input type="number" id="effort" min="0.5" max="24" step="0.5" required
+                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
             </div>
-            <button type="submit" id="submit-button">Add Task</button>
+            <button type="submit" id="submit-button"
+                    class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200">
+                Add Task
+            </button>
         </form>
-        
-        <div id="task-list" class="flex-list">
-            <h2>Pending Tasks</h2>
+
+        <!-- Task Lists -->
+        <div id="task-list" class="mt-6 p-6 bg-white shadow-lg rounded-lg">
+            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Pending Tasks</h2>
+            <div id="task-list-content" class="mt-4 space-y-4"></div>
+            <!-- Bulk delete button for Pending tasks -->
+            <button onclick="bulkDeleteTasks('pending')" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-lg">
+                Bulk Delete Selected Tasks
+            </button>
         </div>
         
-        <div id="completed-task-section">
-            <h2>Completed Tasks</h2>
-            <div id="completed-task-list" class="flex-list"></div>
+        <div id="completed-task-section" class="mt-8 p-6 bg-white shadow-lg rounded-lg">
+            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Completed Tasks</h2>
+            <div id="completed-task-list" class="mt-4 space-y-4"></div>
+            <!-- Bulk delete button for Completed tasks -->
+            <button onclick="bulkDeleteTasks('completed')" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-sm">
+                Bulk Delete Selected Completed Tasks
+            </button>
         </div>
+        
     </div>
+
     <script>
-        // Initialize tasks and completed tasks arrays
         let tasks = [];
         let completedTasks = [];
+        let currentView = 'list'; // Default view is list
 
-        // Function to save tasks to cookies
         function saveTasksToCookies() {
             document.cookie = "tasks=" + JSON.stringify(tasks) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
         }
 
-        // Function to save completed tasks to cookies
         function saveCompletedTasksToCookies() {
             document.cookie = "completedTasks=" + JSON.stringify(completedTasks) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
         }
 
-        // Function to load tasks from cookies
         function loadTasksFromCookies() {
             const cookies = document.cookie.split("; ");
             for (let cookie of cookies) {
@@ -87,29 +119,22 @@
             }
         }
 
-        // Function to delete a task
-        function deleteTask(index) {
-            tasks.splice(index, 1); // Remove task
-            saveTasksToCookies();
-            updateTaskList();
+        function deleteTask(index, type) {
+            if (type === 'pending') {
+                tasks.splice(index, 1);
+                saveTasksToCookies();
+                updateTaskList();
+            } else if (type === 'completed') {
+                completedTasks.splice(index, 1);
+                saveCompletedTasksToCookies();
+                updateCompletedTaskList();
+            }
         }
 
-        // Function to edit a task
-        function editTask(index) {
-            const task = tasks[index];
-            document.getElementById("task-name").value = task.name;
-            document.getElementById("urgency").value = task.urgency;
-            document.getElementById("importance").value = task.importance;
-            document.getElementById("effort").value = task.effort;
-
-            deleteTask(index); // Remove current task
-        }
-
-        // Function to complete a task
         function completeTask(index) {
-            const completedTask = tasks.splice(index, 1)[0]; // Remove from tasks and get the task
+            const completedTask = tasks.splice(index, 1)[0];
             if (completedTask) {
-                completedTasks.push(completedTask); // Add to completed tasks
+                completedTasks.push(completedTask);
                 saveTasksToCookies();
                 saveCompletedTasksToCookies();
                 updateTaskList();
@@ -117,292 +142,121 @@
             }
         }
 
-        // Function to update task list
-        function updateTaskList() {
-            tasks.forEach(task => {
-                task.priorityScore = 
-                    0.5 * task.importance + 
-                    0.4 * task.urgency - 
-                    0.1 * task.effort;
-            });
-            tasks.sort((a, b) => b.priorityScore - a.priorityScore); // Sort by priority score
+        function bulkDeleteTasks(type) {
+            let selectedTasks = [];
+            if (type === 'pending') {
+                selectedTasks = Array.from(document.querySelectorAll('.task-checkbox:checked')).map(checkbox => checkbox.dataset.index);
+                tasks = tasks.filter((task, index) => !selectedTasks.includes(index.toString()));
+                saveTasksToCookies();
+                updateTaskList();
+            } else if (type === 'completed') {
+                selectedTasks = Array.from(document.querySelectorAll('.completed-task-checkbox:checked')).map(checkbox => checkbox.dataset.index);
+                completedTasks = completedTasks.filter((task, index) => !selectedTasks.includes(index.toString()));
+                saveCompletedTasksToCookies();
+                updateCompletedTaskList();
+            }
+        }
 
-            const taskList = document.getElementById('task-list');
-            taskList.innerHTML = ''; // Clear existing tasks
-            tasks.forEach((task, index) => {
+        function updateTaskList(filteredTasks = tasks) {
+            filteredTasks.forEach(task => {
+                task.priorityScore = 0.5 * task.importance + 0.4 * task.urgency - 0.1 * task.effort;
+            });
+            filteredTasks.sort((a, b) => b.priorityScore - a.priorityScore);
+
+            const taskListContent = document.getElementById('task-list-content');
+            taskListContent.innerHTML = '';
+
+            filteredTasks.forEach((task, index) => {
                 const taskDiv = document.createElement('div');
-                taskDiv.classList.add('task-item');
+                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'justify-between', 'items-center', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200', 'mb-4');
                 taskDiv.innerHTML = `
-                    <strong>${task.name}</strong><br>
-                    Urgency: ${task.urgency}, Importance: ${task.importance}, 
-                    Effort: ${task.effort} hrs<br>
-                    Priority Score: ${task.priorityScore.toFixed(2)}<br>
-                    <button onclick="completeTask(${index})">Complete Task</button>
-                    <button onclick="deleteTask(${index})">Delete Task</button>
-                    <button onclick="editTask(${index})">Edit Task</button>
+                    <div class="flex items-center space-x-4">
+                        <input type="checkbox" class="task-checkbox" data-index="${index}" />
+                        <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong><br>
+                        <div class="text-sm text-gray-600">
+                            Urgency: ${task.urgency}, Importance: ${task.importance}, Effort: ${task.effort} hrs<br>
+                            Priority Score: <span class="font-bold">${task.priorityScore.toFixed(2)}</span>
+                        </div>
+                    </div>
+                    <button onclick="completeTask(${index})" class="text-white bg-green-600 hover:bg-green-700 rounded-lg p-2">
+                        Mark as Complete
+                    </button>
+                    <button onclick="deleteTask(${index}, 'pending')" class="text-white bg-red-600 hover:bg-red-700 rounded-lg p-2 ml-2">
+                        Delete
+                    </button>
                 `;
-                taskList.appendChild(taskDiv);
+                taskListContent.appendChild(taskDiv);
             });
         }
 
-        // Function to update the completed task list
         function updateCompletedTaskList() {
             const completedTaskList = document.getElementById('completed-task-list');
-            completedTaskList.innerHTML = ''; // Clear existing tasks
-            completedTasks.forEach(task => {
+            completedTaskList.innerHTML = '';
+            completedTasks.forEach((task, index) => {
                 const taskDiv = document.createElement('div');
-                taskDiv.classList.add('task-item');
+                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'justify-between', 'items-center', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200', 'mb-4');
                 taskDiv.innerHTML = `
-                    <strong>${task.name}</strong><br>
-                    Urgency: ${task.urgency}, Importance: ${task.importance}, 
-                    Effort: ${task.effort} hrs<br>
-                    Priority Score: ${task.priorityScore.toFixed(2)}
+                    <div class="flex items-center space-x-4">
+                        <input type="checkbox" class="completed-task-checkbox" data-index="${index}" />
+                        <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong><br>
+                        <div class="text-sm text-gray-600">
+                            Urgency: ${task.urgency}, Importance: ${task.importance}, Effort: ${task.effort} hrs<br>
+                        </div>
+                    </div>
+                    <button onclick="deleteTask(${index}, 'completed')" class="text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
+                        Delete
+                    </button>
                 `;
                 completedTaskList.appendChild(taskDiv);
             });
         }
 
-        // Event Listener for Form Submission
-        document.getElementById("task-form").addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevent form refresh
+        function addTaskToList(event) {
+            event.preventDefault();
 
-            const name = document.getElementById("task-name").value.trim();
-            const urgency = parseInt(document.getElementById("urgency").value);
-            const importance = parseInt(document.getElementById("importance").value);
-            const effort = parseFloat(document.getElementById("effort").value);
+            const taskName = document.getElementById('task-name').value;
+            const urgency = parseInt(document.getElementById('urgency').value);
+            const importance = parseInt(document.getElementById('importance').value);
+            const effort = parseFloat(document.getElementById('effort').value);
 
-            if (name && urgency && importance && effort) {
-                tasks.push({ name, urgency, importance, effort, priorityScore: 0 });
-                saveTasksToCookies();
-                updateTaskList();
-                this.reset(); // Clear form
-            } else {
-                alert("Please fill out all fields.");
+            if (!taskName || !urgency || !importance || !effort) {
+                alert("All fields are required.");
+                return;
             }
-        });
 
-        // Load tasks and completed tasks on page load
-        window.onload = function() {
-            loadTasksFromCookies();
+            const newTask = { name: taskName, urgency, importance, effort };
+            tasks.push(newTask);
+
+            saveTasksToCookies();
             updateTaskList();
-            updateCompletedTaskList();
-        };
+
+            document.getElementById('task-form').reset();
+        }
+
+        function filterTasks() {
+            const query = document.getElementById('task-search').value.toLowerCase();
+            const filteredTasks = tasks.filter(task => task.name.toLowerCase().includes(query));
+            updateTaskList(filteredTasks);
+        }
+
+        function toggleView(view) {
+            if (view === 'grid') {
+                document.getElementById('task-list').classList.remove('space-y-4');
+                document.getElementById('task-list').classList.add('grid', 'grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3', 'gap-6');
+            } else {
+                document.getElementById('task-list').classList.remove('grid', 'grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3', 'gap-6');
+                document.getElementById('task-list').classList.add('space-y-4');
+            }
+            currentView = view;
+        }
+
+        document.getElementById('task-form').addEventListener('submit', addTaskToList);
+
+        // Initial load
+        loadTasksFromCookies();
+        updateTaskList();
+        updateCompletedTaskList();
     </script>
+
 </body>
 </html>
-<style>
-    /* Define interactive colors in :root for easy customization */
-:root {
-    /* Neutral Colors */
-    --primary-bg-color: #f9fafb;   /* Soft light background */
-    --secondary-bg-color: #fff;     /* White background for cards, forms, etc. */
-    --border-color: #ddd;           /* Light gray for borders */
-    --text-color: #333;             /* Dark text for readability */
-    --subtle-text-color: #555;      /* Slightly lighter text for secondary elements */
-    
-    /* Accent Colors */
-    --primary-color: #0081A7;       /* Teal-blue for main elements like buttons, links */
-    --secondary-color: #00AFB9;     /* Lighter teal-blue for hover effects */
-    --highlight-color: #F07167;     /* Soft coral for deletions or warnings */
-    
-    /* Button Colors */
-    --button-bg-color: #00AFB9;     /* Teal-blue background for primary buttons */
-    --button-bg-hover: #0081A7;     /* Darker teal-blue for button hover */
-    --button-delete-bg: #F07167;    /* Coral color for delete buttons */
-    --button-delete-hover: #d9534f; /* Darker coral for delete button hover */
-    
-    /* Focus and Hover States */
-    --input-focus-border-color: #0081A7; /* Focus state color for inputs */
-    --button-focus-bg-color: #00708E; /* Darker teal for button focus */
-    --task-item-hover-color: rgba(0, 0, 0, 0.1); /* Shadow color for hover */
-}
-
-/* General Styles */
-body {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    background-color: var(--primary-bg-color);
-    color: var(--text-color);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    min-height: 100vh;
-    padding: 2rem;
-}
-
-/* Main Container */
-.flex-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    align-items: center;
-    max-width: 800px;
-    background-color: var(--secondary-bg-color);
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    margin-top: 2rem;
-}
-
-/* Heading */
-.flex-container h1 {
-    font-size: 2.2rem;
-    color: var(--primary-color);
-    text-align: center;
-    margin-bottom: 1.5rem;
-    font-weight: bold;
-}
-
-/* Form Styles */
-.flex-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-    margin-bottom: 1.5rem;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-
-.form-group label {
-    font-size: 1rem;
-    color: var(--subtle-text-color);
-    margin-bottom: 0.5rem;
-}
-
-.form-group input,
-.form-group select {
-    padding: 0.8rem;
-    font-size: 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background-color: #FDFCDC;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    border-color: var(--input-focus-border-color);
-}
-
-/* Submit Button */
-button[type="submit"] {
-    padding: 0.8rem 2rem;
-    font-size: 1.1rem;
-    color: #fff;
-    background-color: var(--button-bg-color);
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 100%;
-}
-
-button[type="submit"]:hover {
-    background-color: var(--button-bg-hover);
-}
-
-/* Task List Section */
-.flex-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-    padding: 1rem;
-    border-radius: 6px;
-    background-color: #fefefe;
-    border: 1px solid var(--border-color);
-}
-
-/* Task Item */
-.task-item {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 1.2rem;
-    background-color: #FED9B7;
-    border-radius: 6px;
-    border: 1px solid var(--border-color);
-    transition: transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.task-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 12px var(--task-item-hover-color);
-}
-
-.task-item strong {
-    font-size: 1.1rem;
-    color: var(--primary-color);
-}
-
-.task-item button {
-    padding: 0.6rem 1.5rem;
-    font-size: 1rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.task-item button:first-child {
-    background-color: var(--button-bg-color);
-    color: #fff;
-}
-
-.task-item button:first-child:hover {
-    background-color: var(--button-bg-hover);
-}
-
-.task-item button:nth-child(2) {
-    background-color: var(--button-delete-bg);
-    color: #fff;
-}
-
-.task-item button:nth-child(2):hover {
-    background-color: var(--button-delete-hover);
-}
-
-/* Completed Task Section */
-#completed-task-section {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    background-color: var(--secondary-bg-color);
-    border-radius: 6px;
-    padding: 1rem;
-    border: 1px solid var(--border-color);
-}
-
-#completed-task-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-/* Media Queries for Responsiveness */
-@media (max-width: 768px) {
-    .flex-container {
-        padding: 1.5rem;
-    }
-
-    .flex-form {
-        gap: 1rem;
-    }
-
-    button[type="submit"] {
-        width: auto;
-        padding: 0.8rem 1.5rem;
-    }
-}
-
-</style>
