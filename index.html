@@ -1,39 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Prioritization Tool</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-gray-100 text-gray-900 font-sans">
 
-    
     <div class="container mx-auto p-6">
         <!-- Search Input Field -->
         <div class="flex justify-between mb-4">
             <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="filterTasks()"
-                   class="w-full p-2 border border-gray-300 rounded-lg shadow-sm">
+                class="w-full p-2 border border-gray-300 rounded-lg shadow-sm">
         </div>
 
         <h1 class="text-3xl font-semibold text-center mb-6">Task Prioritization Tool</h1>
 
-        <!-- Toggle View Buttons -->
+        <!-- Toggle View Buttons
         <div class="flex justify-center mb-4">
             <button onclick="toggleView('list')" class="bg-blue-500 text-white p-2 rounded-lg mr-4 hover:bg-blue-600 transition duration-200">List View</button>
             <button onclick="toggleView('grid')" class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition duration-200">Grid View</button>
-        </div>
+        </div> -->
 
         <!-- Task Form -->
         <form id="task-form" class="space-y-4">
             <div class="space-y-2">
                 <input type="text" id="task-name" placeholder="Task Name" required
-                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                    class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
             </div>
             <div class="space-y-2">
                 <label for="urgency" class="block text-sm font-medium">Urgency:</label>
-                <select id="urgency" required
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                <select id="urgency" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
                     <option value="" disabled selected>Select Urgency</option>
                     <option value="1">1 - Low</option>
                     <option value="2">2</option>
@@ -44,8 +45,7 @@
             </div>
             <div class="space-y-2">
                 <label for="importance" class="block text-sm font-medium">Importance:</label>
-                <select id="importance" required
-                        class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                <select id="importance" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
                     <option value="" disabled selected>Select Importance</option>
                     <option value="1">1 - Low</option>
                     <option value="2">2</option>
@@ -57,10 +57,10 @@
             <div class="space-y-2">
                 <label for="effort" class="block text-sm font-medium">Effort (hours):</label>
                 <input type="number" id="effort" min="0.5" max="24" step="0.5" required
-                       class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
+                    class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
             </div>
             <button type="submit" id="submit-button"
-                    class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200">
+                class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200">
                 Add Task
             </button>
         </form>
@@ -68,20 +68,17 @@
         <!-- Task Lists -->
         <div id="task-list" class="mt-6 p-6 bg-white shadow-lg rounded-lg">
             <h2 class="text-3xl font-semibold text-gray-900 mb-4">Pending Tasks</h2>
-            <div id="task-list-content" class="mt-4 space-y-4"></div>
-            <!-- Bulk delete button for Pending tasks -->
+            <div id="task-list-content" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Tasks will be injected here -->
+            </div>
             <button onclick="bulkDeleteTasks('pending')" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-lg">
-                Bulk Delete Selected Tasks
+                <i class="fa fa-trash mr-2"></i> Bulk Delete Selected Tasks
             </button>
         </div>
-        
+
         <div id="completed-task-section" class="mt-8 p-6 bg-white shadow-lg rounded-lg">
             <h2 class="text-3xl font-semibold text-gray-900 mb-4">Completed Tasks</h2>
             <div id="completed-task-list" class="mt-4 space-y-4"></div>
-            <!-- Bulk delete button for Completed tasks -->
-            <button onclick="bulkDeleteTasks('completed')" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-sm">
-                Bulk Delete Selected Completed Tasks
-            </button>
         </div>
         
     </div>
@@ -149,11 +146,6 @@
                 tasks = tasks.filter((task, index) => !selectedTasks.includes(index.toString()));
                 saveTasksToCookies();
                 updateTaskList();
-            } else if (type === 'completed') {
-                selectedTasks = Array.from(document.querySelectorAll('.completed-task-checkbox:checked')).map(checkbox => checkbox.dataset.index);
-                completedTasks = completedTasks.filter((task, index) => !selectedTasks.includes(index.toString()));
-                saveCompletedTasksToCookies();
-                updateCompletedTaskList();
             }
         }
 
@@ -168,22 +160,24 @@
 
             filteredTasks.forEach((task, index) => {
                 const taskDiv = document.createElement('div');
-                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'justify-between', 'items-center', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200', 'mb-4');
+                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'items-start', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
                 taskDiv.innerHTML = `
                     <div class="flex items-center space-x-4">
                         <input type="checkbox" class="task-checkbox" data-index="${index}" />
-                        <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong><br>
+                        <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong>
                         <div class="text-sm text-gray-600">
                             Urgency: ${task.urgency}, Importance: ${task.importance}, Effort: ${task.effort} hrs<br>
                             Priority Score: <span class="font-bold">${task.priorityScore.toFixed(2)}</span>
                         </div>
                     </div>
-                    <button onclick="completeTask(${index})" class="text-white bg-green-600 hover:bg-green-700 rounded-lg p-2">
-                        Mark as Complete
-                    </button>
-                    <button onclick="deleteTask(${index}, 'pending')" class="text-white bg-red-600 hover:bg-red-700 rounded-lg p-2 ml-2">
-                        Delete
-                    </button>
+                    <div class="flex space-x-2 mt-2">
+                        <button onclick="completeTask(${index})" class="text-white bg-green-600 hover:bg-green-700 rounded-lg p-2">
+                            <i class="fa fa-check mr-2"></i> Complete
+                        </button>
+                        <button onclick="deleteTask(${index}, 'pending')" class="text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
+                            <i class="fa fa-trash mr-2"></i> Delete
+                        </button>
+                    </div>
                 `;
                 taskListContent.appendChild(taskDiv);
             });
@@ -193,70 +187,61 @@
             const completedTaskList = document.getElementById('completed-task-list');
             completedTaskList.innerHTML = '';
             completedTasks.forEach((task, index) => {
-                const taskDiv = document.createElement('div');
-                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'justify-between', 'items-center', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200', 'mb-4');
-                taskDiv.innerHTML = `
+                const completedTaskDiv = document.createElement('div');
+                completedTaskDiv.classList.add('bg-gray-200', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'space-y-4');
+                completedTaskDiv.innerHTML = `
                     <div class="flex items-center space-x-4">
-                        <input type="checkbox" class="completed-task-checkbox" data-index="${index}" />
-                        <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong><br>
+                        <strong class="text-xl text-gray-800">${task.name}</strong>
                         <div class="text-sm text-gray-600">
                             Urgency: ${task.urgency}, Importance: ${task.importance}, Effort: ${task.effort} hrs<br>
+                            Priority Score: <span class="font-bold">${task.priorityScore.toFixed(2)}</span>
                         </div>
                     </div>
-                    <button onclick="deleteTask(${index}, 'completed')" class="text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
-                        Delete
-                    </button>
+                    <div class="flex space-x-2 mt-2">
+                        <button onclick="deleteTask(${index}, 'completed')" class="text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
+                            <i class="fa fa-trash mr-2"></i> Delete
+                        </button>
+                    </div>
                 `;
-                completedTaskList.appendChild(taskDiv);
+                completedTaskList.appendChild(completedTaskDiv);
             });
         }
 
-        function addTaskToList(event) {
-            event.preventDefault();
-
-            const taskName = document.getElementById('task-name').value;
-            const urgency = parseInt(document.getElementById('urgency').value);
-            const importance = parseInt(document.getElementById('importance').value);
-            const effort = parseFloat(document.getElementById('effort').value);
-
-            if (!taskName || !urgency || !importance || !effort) {
-                alert("All fields are required.");
-                return;
+        function toggleView(view) {
+            currentView = view;
+            if (view === 'grid') {
+                document.getElementById('task-list').classList.add('grid');
+                document.getElementById('task-list').classList.remove('list');
+            } else {
+                document.getElementById('task-list').classList.add('list');
+                document.getElementById('task-list').classList.remove('grid');
             }
-
-            const newTask = { name: taskName, urgency, importance, effort };
-            tasks.push(newTask);
-
-            saveTasksToCookies();
-            updateTaskList();
-
-            document.getElementById('task-form').reset();
         }
 
         function filterTasks() {
-            const query = document.getElementById('task-search').value.toLowerCase();
-            const filteredTasks = tasks.filter(task => task.name.toLowerCase().includes(query));
+            const searchValue = document.getElementById('task-search').value.toLowerCase();
+            const filteredTasks = tasks.filter(task => task.name.toLowerCase().includes(searchValue));
             updateTaskList(filteredTasks);
         }
 
-        function toggleView(view) {
-            if (view === 'grid') {
-                document.getElementById('task-list').classList.remove('space-y-4');
-                document.getElementById('task-list').classList.add('grid', 'grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3', 'gap-6');
-            } else {
-                document.getElementById('task-list').classList.remove('grid', 'grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3', 'gap-6');
-                document.getElementById('task-list').classList.add('space-y-4');
-            }
-            currentView = view;
-        }
+        document.getElementById('task-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const taskName = document.getElementById('task-name').value;
+            const urgency = document.getElementById('urgency').value;
+            const importance = document.getElementById('importance').value;
+            const effort = document.getElementById('effort').value;
 
-        document.getElementById('task-form').addEventListener('submit', addTaskToList);
+            const newTask = { name: taskName, urgency, importance, effort };
+            tasks.push(newTask);
+            saveTasksToCookies();
+            updateTaskList();
+            e.target.reset();
+        });
 
-        // Initial load
         loadTasksFromCookies();
         updateTaskList();
         updateCompletedTaskList();
     </script>
-
 </body>
+
 </html>
