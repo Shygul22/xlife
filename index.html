@@ -7,24 +7,20 @@
     <title>Task Prioritization Tool</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="bg-gray-100 text-gray-900 font-sans">
 
     <div class="container mx-auto p-6">
-        <!-- Search Input Field -->
-        <div class="flex justify-between mb-4">
-            <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="filterTasks()"
-                class="w-full p-2 border border-gray-300 rounded-lg shadow-sm">
+         <!-- Pie Chart Section -->
+         <div class="mt-8 p-6 bg-white shadow-lg rounded-lg max-w-3xl mx-auto">
+            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Task Prioritization (Pie Chart)</h2>
+            <canvas id="priority-chart" class="w-60 h-60"></canvas>
         </div>
+       
 
         <h1 class="text-3xl font-semibold text-center mb-6">Task Prioritization Tool</h1>
-
-        <!-- Toggle View Buttons
-        <div class="flex justify-center mb-4">
-            <button onclick="toggleView('list')" class="bg-blue-500 text-white p-2 rounded-lg mr-4 hover:bg-blue-600 transition duration-200">List View</button>
-            <button onclick="toggleView('grid')" class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition duration-200">Grid View</button>
-        </div> -->
 
         <!-- Task Form -->
         <form id="task-form" class="space-y-4">
@@ -56,7 +52,7 @@
             </div>
             <div class="space-y-2">
                 <label for="effort" class="block text-sm font-medium">Effort (hours):</label>
-                <input type="number" id="effort" min="0.5" max="24" step="0.5" required
+                <input type="number" id="effort" min="0.0" max="24" step="0.5" required
                     class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
             </div>
             <button type="submit" id="submit-button"
@@ -68,6 +64,11 @@
         <!-- Task Lists -->
         <div id="task-list" class="mt-6 p-6 bg-white shadow-lg rounded-lg">
             <h2 class="text-3xl font-semibold text-gray-900 mb-4">Pending Tasks</h2>
+             <!-- Search Input Field -->
+        <div class="flex justify-between mb-4">
+            <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="filterTasks()"
+                class=" p-2 border border-gray-300 rounded-lg shadow-sm">
+        </div>
             <div id="task-list-content" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Tasks will be injected here -->
             </div>
@@ -80,6 +81,9 @@
             <h2 class="text-3xl font-semibold text-gray-900 mb-4">Completed Tasks</h2>
             <div id="completed-task-list" class="mt-4 space-y-4"></div>
         </div>
+
+       
+    
         
     </div>
 
@@ -181,17 +185,21 @@
                 `;
                 taskListContent.appendChild(taskDiv);
             });
+
+            // Update Pie Chart with prioritization data
+            updatePieChart(filteredTasks);
         }
 
         function updateCompletedTaskList() {
             const completedTaskList = document.getElementById('completed-task-list');
             completedTaskList.innerHTML = '';
+
             completedTasks.forEach((task, index) => {
-                const completedTaskDiv = document.createElement('div');
-                completedTaskDiv.classList.add('bg-gray-200', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'space-y-4');
-                completedTaskDiv.innerHTML = `
+                const taskDiv = document.createElement('div');
+                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md');
+                taskDiv.innerHTML = `
                     <div class="flex items-center space-x-4">
-                        <strong class="text-xl text-gray-800">${task.name}</strong>
+                        <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong>
                         <div class="text-sm text-gray-600">
                             Urgency: ${task.urgency}, Importance: ${task.importance}, Effort: ${task.effort} hrs<br>
                             Priority Score: <span class="font-bold">${task.priorityScore.toFixed(2)}</span>
@@ -203,45 +211,124 @@
                         </button>
                     </div>
                 `;
-                completedTaskList.appendChild(completedTaskDiv);
+                completedTaskList.appendChild(taskDiv);
             });
         }
 
-        function toggleView(view) {
-            currentView = view;
-            if (view === 'grid') {
-                document.getElementById('task-list').classList.add('grid');
-                document.getElementById('task-list').classList.remove('list');
-            } else {
-                document.getElementById('task-list').classList.add('list');
-                document.getElementById('task-list').classList.remove('grid');
+        function updatePieChart(tasks) {
+    // Map tasks to display their name along with their priority in the label
+    const taskNames = tasks.map(task => {
+        let priorityLabel = '';
+        if (task.priorityScore >= 4) {
+            priorityLabel = `High: ${task.name}`;
+        } else if (task.priorityScore >= 2) {
+            priorityLabel = `Medium: ${task.name}`;
+        } else {
+            priorityLabel = `Low: ${task.name}`;
+        }
+        return priorityLabel;
+    });
+
+    // Define a color palette to give each task a unique color
+    const colors = [
+        '#FF6B6B', '#FF9F80', '#FFCC5C', '#FF9F3D', '#FFD700', // Warm colors
+        '#4CAF50', '#8BC34A', '#FFEB3B', '#8D6E63', '#00B0FF', // Cool colors
+        '#FF4081', '#9C27B0', '#E91E63', '#F44336', '#9E9D24'  // Various others
+    ];
+
+    // Prepare the data for the pie chart
+    const data = {
+        labels: taskNames, // Each task will have a separate label in the pie chart
+        datasets: [{
+            data: tasks.map(task => 1), // Every task gets a value of 1
+            backgroundColor: tasks.map((task, index) => colors[index % colors.length]), // Assigning a unique color to each task
+            hoverBackgroundColor: tasks.map((task, index) => {
+                const shade = (index % 2 === 0) ? 0.8 : 1.2; // Slight hover effect for color
+                return shadeColor(colors[index % colors.length], shade);
+            })
+        }]
+    };
+
+    const config = {
+        type: 'pie',
+        data: data,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            const label = tooltipItem.label;
+                            const value = tooltipItem.raw;
+                            return `${label}: 1 task`;
+                        }
+                    }
+                }
             }
         }
+    };
 
-        function filterTasks() {
-            const searchValue = document.getElementById('task-search').value.toLowerCase();
-            const filteredTasks = tasks.filter(task => task.name.toLowerCase().includes(searchValue));
-            updateTaskList(filteredTasks);
-        }
+    const ctx = document.getElementById('priority-chart').getContext('2d');
+    if (window.myPieChart) {
+        window.myPieChart.destroy();
+    }
+    window.myPieChart = new Chart(ctx, config);
+}
 
+// Function to lighten or darken a color
+function shadeColor(color, shade) {
+    const colorRegex = /#([0-9A-Fa-f]{6})/;
+    if (colorRegex.test(color)) {
+        let colorVal = color.match(colorRegex)[1];
+        let r = parseInt(colorVal.substr(0, 2), 16);
+        let g = parseInt(colorVal.substr(2, 2), 16);
+        let b = parseInt(colorVal.substr(4, 2), 16);
+
+        r = Math.min(255, Math.max(0, Math.floor(r * shade)));
+        g = Math.min(255, Math.max(0, Math.floor(g * shade)));
+        b = Math.min(255, Math.max(0, Math.floor(b * shade)));
+
+        return `rgb(${r},${g},${b})`;
+    }
+    return color; // Return original color if format doesn't match
+}
+
+        
+        // Event Listeners
         document.getElementById('task-form').addEventListener('submit', function (e) {
             e.preventDefault();
-            const taskName = document.getElementById('task-name').value;
-            const urgency = document.getElementById('urgency').value;
-            const importance = document.getElementById('importance').value;
-            const effort = document.getElementById('effort').value;
 
-            const newTask = { name: taskName, urgency, importance, effort };
-            tasks.push(newTask);
+            const taskName = document.getElementById('task-name').value;
+            const urgency = parseInt(document.getElementById('urgency').value);
+            const importance = parseInt(document.getElementById('importance').value);
+            const effort = parseFloat(document.getElementById('effort').value);
+
+            const task = {
+                name: taskName,
+                urgency: urgency,
+                importance: importance,
+                effort: effort
+            };
+
+            tasks.push(task);
             saveTasksToCookies();
             updateTaskList();
-            e.target.reset();
+            this.reset(); // Reset the form after submission
         });
 
+        // Load tasks on page load
         loadTasksFromCookies();
         updateTaskList();
-        updateCompletedTaskList();
     </script>
+
 </body>
 
 </html>
