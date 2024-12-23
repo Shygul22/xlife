@@ -4,123 +4,208 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Prioritization Tool</title>
+    <title>Zen Journey</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
 </head>
 
 <body class="bg-gray-100 text-gray-900 font-sans">
-
     <div class="container mx-auto p-6">
-         <!-- Pie Chart Section -->
-         <div class="mt-8 p-6 bg-white shadow-lg rounded-lg max-w-3xl mx-auto">
-            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Task Prioritization (Pie Chart)</h2>
-            <canvas id="priority-chart" class="w-60 h-60"></canvas>
-        </div>
-       
-
         <h1 class="text-3xl font-semibold text-center mb-6">Task Prioritization Tool</h1>
 
-        <!-- Task Form -->
-        <form id="task-form" class="space-y-4">
-            <div class="space-y-2">
-                <input type="text" id="task-name" placeholder="Task Name" required
-                    class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
-            </div>
-            <div class="space-y-2">
-                <label for="urgency" class="block text-sm font-medium">Urgency:</label>
-                <select id="urgency" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
-                    <option value="" disabled selected>Select Urgency</option>
-                    <option value="1">1 - Low</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5 - High</option>
-                </select>
-            </div>
-            <div class="space-y-2">
-                <label for="importance" class="block text-sm font-medium">Importance:</label>
-                <select id="importance" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
-                    <option value="" disabled selected>Select Importance</option>
-                    <option value="1">1 - Low</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5 - High</option>
-                </select>
-            </div>
-            <div class="space-y-2">
-                <label for="effort" class="block text-sm font-medium">Effort (hours):</label>
-                <input type="number" id="effort" min="0.0" max="24" step="0.5" required
-                    class="w-full p-3 border border-gray-300 rounded-lg shadow-sm">
-            </div>
-            <button type="submit" id="submit-button"
-                class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200">
-                Add Task
-            </button>
-        </form>
+        <div class="flex flex-col lg:flex-row lg:space-x-6">
+            <div class="flex flex-col space-y-6 lg:w-1/3">
+                <!-- Task Form -->
+                <form id="task-form" class="space-y-4 bg-white p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                    <div class="space-y-2">
+                        <input type="text" id="task-name" placeholder="Task Name" required
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="urgency" class="block text-sm font-medium">Urgency:</label>
+                        <select id="urgency" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="" disabled selected>Select Urgency</option>
+                            <option value="1">1 - Low</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5 - High</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="importance" class="block text-sm font-medium">Importance:</label>
+                        <select id="importance" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="" disabled selected>Select Importance</option>
+                            <option value="1">1 - Low</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5 - High</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="effort" class="block text-sm font-medium">Effort (hours):</label>
+                        <input type="number" id="effort" min="0.0" max="24" step="0.5" required
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <button type="submit" id="submit-button"
+                        class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Add Task
+                    </button>
+                </form>
 
-        <!-- Task Lists -->
-        <div id="task-list" class="mt-6 p-6 bg-white shadow-lg rounded-lg">
-            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Pending Tasks</h2>
-             <!-- Search Input Field -->
-        <div class="flex justify-between mb-4">
-            <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="filterTasks()"
-                class=" p-2 border border-gray-300 rounded-lg shadow-sm">
-        </div>
-            <div id="task-list-content" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Tasks will be injected here -->
+                <!-- Time Slot Definition Section -->
+                <div id="time-slot-definition" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
+                    <h2 class="text-3xl font-semibold text-gray-900 mb-4">Define Time Slots</h2>
+                    <form id="time-slot-form" class="space-y-4">
+                        <div class="space-y-2">
+                            <label for="start-time" class="block text-sm font-medium">Start Time:</label>
+                            <input type="time" id="start-time" value="09:00" required
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="end-time" class="block text-sm font-medium">End Time:</label>
+                            <input type="time" id="end-time" value="17:00" required
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="break-time" class="block text-sm font-medium">Break Time (minutes):</label>
+                            <input type="number" id="break-time" value="60" min="0" required
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <button type="submit" id="time-slot-submit-button"
+                            class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Set Time Slots
+                        </button>
+                        <button type="button" id="reset-time-slots-button"
+                            class="w-full bg-gray-500 text-white p-3 rounded-lg shadow-md hover:bg-gray-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 mt-4">
+                            Reset Time Slots
+                        </button>
+                    </form>
+                </div>
             </div>
-            <button onclick="bulkDeleteTasks('pending')" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-lg">
-                <i class="fa fa-trash mr-2"></i> Bulk Delete Selected Tasks
-            </button>
+
+            <div class="flex flex-col space-y-6 lg:w-2/3">
+                <!-- Task Lists -->
+                <div id="task-list" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
+                    <h2 class="text-3xl font-semibold text-gray-900 mb-4"> Tasks</h2>
+                    <!-- Search Input Field -->
+                    <div class="flex justify-between mb-4">
+                        <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="filterTasks()"
+                            class="p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="flex space-x-2">
+                            <button id="grid-view-button" class="p-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Grid View
+                            </button>
+                            <button id="list-view-button" class="p-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                List View
+                            </button>
+                            <button id="calendar-view-button" class="p-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                Calendar View
+                            </button>
+                        </div>
+                    </div>
+                    <div id="task-list-content" class="mt-4 list-view">
+                        <!-- Tasks will be injected here -->
+                    </div>
+                    <div id="calendar-view" class="hidden mt-4">
+                        <div id="calendar"></div>
+                    </div>
+                    <button onclick="bulkDeleteTasks('pending')" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-lg">
+                        <i class="fa fa-trash mr-2"></i> Bulk Delete Selected Tasks
+                    </button>
+                </div>
+
+                <!-- Top Priority Task Section -->
+                <div id="top-priority-task-container" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105 resize-y overflow-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-3xl font-semibold text-gray-900">Top Priority Task</h2>
+                        <button id="toggle-priority-task" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <i class="fa fa-chevron-up"></i>
+                        </button>
+                    </div>
+                    <div id="priority-chart-container" class="mt-4 flex justify-center">
+                        <canvas id="priority-chart" class="w-6 h-6"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div id="completed-task-section" class="mt-8 p-6 bg-white shadow-lg rounded-lg">
+        <div id="completed-task-section" class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
             <h2 class="text-3xl font-semibold text-gray-900 mb-4">Completed Tasks</h2>
             <div id="completed-task-list" class="mt-4 space-y-4"></div>
         </div>
-
-       
-    
-        
     </div>
 
     <script>
         let tasks = [];
         let completedTasks = [];
-        let currentView = 'list'; // Default view is list
 
         function saveTasksToCookies() {
-            document.cookie = "tasks=" + JSON.stringify(tasks) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+            try {
+                document.cookie = "tasks=" + encodeURIComponent(JSON.stringify(tasks)) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+            } catch (e) {
+                console.error("Error saving tasks to cookies:", e);
+            }
         }
 
         function saveCompletedTasksToCookies() {
-            document.cookie = "completedTasks=" + JSON.stringify(completedTasks) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+            try {
+                document.cookie = "completedTasks=" + encodeURIComponent(JSON.stringify(completedTasks)) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+            } catch (e) {
+                console.error("Error saving completed tasks to cookies:", e);
+            }
+        }
+
+        function savePriorityTaskStateToCookies(isCollapsed) {
+            try {
+                document.cookie = "priorityTaskCollapsed=" + encodeURIComponent(isCollapsed) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+            } catch (e) {
+                console.error("Error saving priority task state to cookies:", e);
+            }
         }
 
         function loadTasksFromCookies() {
             const cookies = document.cookie.split("; ");
+            console.log("Loading tasks from cookies:", cookies);
             for (let cookie of cookies) {
                 const [name, value] = cookie.split("=");
                 if (name === "tasks") {
                     try {
                         tasks = JSON.parse(decodeURIComponent(value)) || [];
+                        console.log("Tasks loaded:", tasks);
                     } catch (e) {
+                        console.error("Error parsing tasks from cookies:", e);
                         tasks = [];
                     }
                 } else if (name === "completedTasks") {
                     try {
                         completedTasks = JSON.parse(decodeURIComponent(value)) || [];
+                        console.log("Completed tasks loaded:", completedTasks);
                     } catch (e) {
+                        console.error("Error parsing completed tasks from cookies:", e);
                         completedTasks = [];
+                    }
+                } else if (name === "priorityTaskCollapsed") {
+                    const isCollapsed = decodeURIComponent(value) === 'true';
+                    const priorityChartContainer = document.getElementById('priority-chart-container');
+                    const togglePriorityTaskButton = document.getElementById('toggle-priority-task');
+                    if (isCollapsed) {
+                        priorityChartContainer.classList.add('hidden');
+                        togglePriorityTaskButton.innerHTML = '<i class="fa fa-chevron-down"></i>';
+                    } else {
+                        priorityChartContainer.classList.remove('hidden');
+                        togglePriorityTaskButton.innerHTML = '<i class="fa fa-chevron-up"></i>';
                     }
                 }
             }
         }
 
         function deleteTask(index, type) {
+            console.log(`Deleting task at index ${index} from ${type} tasks.`);
             if (type === 'pending') {
                 tasks.splice(index, 1);
                 saveTasksToCookies();
@@ -133,9 +218,45 @@
         }
 
         function completeTask(index) {
+            console.log(`Completing task at index ${index}.`);
             const completedTask = tasks.splice(index, 1)[0];
             if (completedTask) {
+                completedTask.completedTime = new Date().toLocaleString();
                 completedTasks.push(completedTask);
+
+                saveTasksToCookies();         // Save updated task list
+                saveCompletedTasksToCookies(); // Save completed tasks
+
+                updateTaskList(); // Update the task list without reallocating time slots
+                updateCompletedTaskList(); // Refresh the completed task list
+            }
+        }
+
+        function bulkDeleteTasks(type) {
+            console.log(`Performing bulk delete on ${type} tasks.`);
+            let selectedTasks = [];
+            if (type === 'pending') {
+                selectedTasks = Array.from(document.querySelectorAll('.task-checkbox:checked')).map(checkbox => parseInt(checkbox.dataset.index));
+                console.log("Selected tasks for deletion:", selectedTasks);
+                tasks = tasks.filter((task, index) => !selectedTasks.includes(index));
+                saveTasksToCookies();
+                updateTaskList();
+            }
+        }
+
+        function editTask(index) {
+            const task = tasks[index];
+            document.getElementById('task-name').value = task.name;
+            document.getElementById('urgency').value = task.urgency;
+            document.getElementById('importance').value = task.importance;
+            document.getElementById('effort').value = task.effort;
+            deleteTask(index, 'pending');
+        }
+
+        function clearAllTasks() {
+            if (confirm("Are you sure you want to clear all tasks?")) {
+                tasks = [];
+                completedTasks = [];
                 saveTasksToCookies();
                 saveCompletedTasksToCookies();
                 updateTaskList();
@@ -143,19 +264,10 @@
             }
         }
 
-        function bulkDeleteTasks(type) {
-            let selectedTasks = [];
-            if (type === 'pending') {
-                selectedTasks = Array.from(document.querySelectorAll('.task-checkbox:checked')).map(checkbox => checkbox.dataset.index);
-                tasks = tasks.filter((task, index) => !selectedTasks.includes(index.toString()));
-                saveTasksToCookies();
-                updateTaskList();
-            }
-        }
-
         function updateTaskList(filteredTasks = tasks) {
+            console.log("Updating task list:", filteredTasks);
             filteredTasks.forEach(task => {
-                task.priorityScore = 0.5 * task.importance + 0.4 * task.urgency - 0.1 * task.effort;
+                task.priorityScore = (0.5 * task.importance + 0.4 * task.urgency - 0.1 * task.effort) || 0;
             });
             filteredTasks.sort((a, b) => b.priorityScore - a.priorityScore);
 
@@ -164,21 +276,25 @@
 
             filteredTasks.forEach((task, index) => {
                 const taskDiv = document.createElement('div');
-                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'items-start', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
+                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
                 taskDiv.innerHTML = `
                     <div class="flex items-center space-x-4">
                         <input type="checkbox" class="task-checkbox" data-index="${index}" />
                         <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong>
                         <div class="text-sm text-gray-600">
                             Urgency: ${task.urgency}, Importance: ${task.importance}, Effort: ${task.effort} hrs<br>
-                            Priority Score: <span class="font-bold">${task.priorityScore.toFixed(2)}</span>
+                            Priority Score: <span class="font-bold">${task.priorityScore.toFixed(2)}</span><br>
+                            Scheduled Time: ${task.scheduledTime || "Not scheduled"}
                         </div>
                     </div>
                     <div class="flex space-x-2 mt-2">
-                        <button onclick="completeTask(${index})" class="text-white bg-green-600 hover:bg-green-700 rounded-lg p-2">
+                        <button onclick="completeTask(${index})" class="flex-1 text-white bg-green-600 hover:bg-green-700 rounded-lg p-2">
                             <i class="fa fa-check mr-2"></i> Complete
                         </button>
-                        <button onclick="deleteTask(${index}, 'pending')" class="text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
+                        <button onclick="editTask(${index})" class="flex-1 text-white bg-yellow-500 hover:bg-yellow-600 rounded-lg p-2">
+                            <i class="fa fa-edit mr-2"></i> Edit
+                        </button>
+                        <button onclick="deleteTask(${index}, 'pending')" class="flex-1 text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
                             <i class="fa fa-trash mr-2"></i> Delete
                         </button>
                     </div>
@@ -186,17 +302,17 @@
                 taskListContent.appendChild(taskDiv);
             });
 
-            // Update Pie Chart with prioritization data
             updatePieChart(filteredTasks);
         }
 
         function updateCompletedTaskList() {
+            console.log("Updating completed task list:", completedTasks);
             const completedTaskList = document.getElementById('completed-task-list');
             completedTaskList.innerHTML = '';
 
             completedTasks.forEach((task, index) => {
                 const taskDiv = document.createElement('div');
-                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md');
+                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
                 taskDiv.innerHTML = `
                     <div class="flex items-center space-x-4">
                         <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong>
@@ -206,7 +322,7 @@
                         </div>
                     </div>
                     <div class="flex space-x-2 mt-2">
-                        <button onclick="deleteTask(${index}, 'completed')" class="text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
+                        <button onclick="deleteTask(${index}, 'completed')" class="flex-1 text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
                             <i class="fa fa-trash mr-2"></i> Delete
                         </button>
                     </div>
@@ -216,119 +332,278 @@
         }
 
         function updatePieChart(tasks) {
-    // Map tasks to display their name along with their priority in the label
-    const taskNames = tasks.map(task => {
-        let priorityLabel = '';
-        if (task.priorityScore >= 4) {
-            priorityLabel = `High: ${task.name}`;
-        } else if (task.priorityScore >= 2) {
-            priorityLabel = `Medium: ${task.name}`;
-        } else {
-            priorityLabel = `Low: ${task.name}`;
-        }
-        return priorityLabel;
-    });
+            console.log("Updating pie chart with tasks:", tasks);
+            const taskNames = tasks.map(task => {
+                let priorityLabel = '';
+                if (task.priorityScore >= 4) {
+                    priorityLabel = `High: ${task.name}`;
+                } else if (task.priorityScore >= 2) {
+                    priorityLabel = `Medium: ${task.name}`;
+                } else {
+                    priorityLabel = `Low: ${task.name}`;
+                }
+                return priorityLabel;
+            });
 
-    // Define a color palette to give each task a unique color
-    const colors = [
-        '#FF6B6B', '#FF9F80', '#FFCC5C', '#FF9F3D', '#FFD700', // Warm colors
-        '#4CAF50', '#8BC34A', '#FFEB3B', '#8D6E63', '#00B0FF', // Cool colors
-        '#FF4081', '#9C27B0', '#E91E63', '#F44336', '#9E9D24'  // Various others
-    ];
+            const colors = [
+                '#FF6B6B', '#FF9F80', '#FFCC5C', '#FF9F3D', '#FFD700', 
+                '#4CAF50', '#8BC34A', '#FFEB3B', '#8D6E63', '#00B0FF', 
+                '#FF4081', '#9C27B0', '#E91E63', '#F44336', '#9E9D24'
+            ];
 
-    // Prepare the data for the pie chart
-    const data = {
-        labels: taskNames, // Each task will have a separate label in the pie chart
-        datasets: [{
-            data: tasks.map(task => 1), // Every task gets a value of 1
-            backgroundColor: tasks.map((task, index) => colors[index % colors.length]), // Assigning a unique color to each task
-            hoverBackgroundColor: tasks.map((task, index) => {
-                const shade = (index % 2 === 0) ? 0.8 : 1.2; // Slight hover effect for color
-                return shadeColor(colors[index % colors.length], shade);
-            })
-        }]
-    };
+            const data = {
+                labels: taskNames,
+                datasets: [{
+                    data: tasks.map(task => 1),
+                    backgroundColor: tasks.map((task, index) => colors[index % colors.length]),
+                }]
+            };
 
-    const config = {
-        type: 'pie',
-        data: data,
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        font: {
-                            size: 10
+            const config = {
+                type: 'pie',
+                data: data,
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (tooltipItem) {
+                                    const label = tooltipItem.label;
+                                    return `${label}: 1 task`;
+                                }
+                            }
                         }
                     }
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function (tooltipItem) {
-                            const label = tooltipItem.label;
-                            const value = tooltipItem.raw;
-                            return `${label}: 1 task`;
-                        }
+                }
+            };
+
+            const ctx = document.getElementById('priority-chart').getContext('2d');
+            if (window.myPieChart) {
+                console.log("Destroying existing pie chart.");
+                window.myPieChart.destroy();
+            }
+            window.myPieChart = new Chart(ctx, config);
+        }
+
+        function allocateTimeSlots(tasks, startTimeDecimal = null) {
+            const startTime = document.getElementById('start-time').value; // Start time in HH:MM format
+            const endTime = document.getElementById('end-time').value; // End time in HH:MM format
+            const breakTime = parseInt(document.getElementById('break-time').value) / 60; // Break time in hours
+
+            let currentTime = startTimeDecimal !== null ? startTimeDecimal : convertTimeToDecimal(startTime);
+            const endDecimalTime = convertTimeToDecimal(endTime);
+
+            tasks.forEach(task => {
+                // Skip completed tasks
+                if (task.completedTime) return;
+
+                if (currentTime + task.effort + breakTime <= endDecimalTime) {
+                    // Allocate time for the task
+                    task.scheduledTime = `${formatTime(currentTime)} - ${formatTime(currentTime + task.effort)}`;
+                    currentTime += task.effort + breakTime;
+                } else {
+                    // If the task cannot be scheduled due to lack of time
+                    task.scheduledTime = "Exceeds available time";
+                }
+            });
+
+            saveTasksToCookies(); // Save updated task list with time allocations
+        }
+
+        function convertTimeToDecimal(time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            return hours + minutes / 60;
+        }
+
+        function formatTime(decimalTime) {
+            const hours = Math.floor(decimalTime);
+            const minutes = Math.round((decimalTime - hours) * 60);
+            const period = hours >= 12 ? 'PM' : 'AM';
+            const formattedHour = hours % 12 || 12;
+            return `${formattedHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+        }
+
+        function saveTimeSlotsToCookies() {
+            try {
+                const startTime = document.getElementById('start-time').value;
+                const endTime = document.getElementById('end-time').value;
+                const breakTime = document.getElementById('break-time').value;
+                document.cookie = "startTime=" + encodeURIComponent(startTime) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+                document.cookie = "endTime=" + encodeURIComponent(endTime) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+                document.cookie = "breakTime=" + encodeURIComponent(breakTime) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+            } catch (e) {
+                console.error("Error saving time slots to cookies:", e);
+            }
+        }
+
+        function loadTimeSlotsFromCookies() {
+            const cookies = document.cookie.split("; ");
+            console.log("Loading time slots from cookies:", cookies);
+            for (let cookie of cookies) {
+                const [name, value] = cookie.split("=");
+                if (name === "startTime") {
+                    document.getElementById('start-time').value = decodeURIComponent(value);
+                } else if (name === "endTime") {
+                    document.getElementById('end-time').value = decodeURIComponent(value);
+                } else if (name === "breakTime") {
+                    document.getElementById('break-time').value = decodeURIComponent(value);
+                }
+            }
+        }
+
+        function saveViewPreferenceToCookies(view) {
+            try {
+                document.cookie = "viewPreference=" + encodeURIComponent(view) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+            } catch (e) {
+                console.error("Error saving view preference to cookies:", e);
+            }
+        }
+
+        function loadViewPreferenceFromCookies() {
+            const cookies = document.cookie.split("; ");
+            for (let cookie of cookies) {
+                const [name, value] = cookie.split("=");
+                if (name === "viewPreference") {
+                    const view = decodeURIComponent(value);
+                    if (view === "grid") {
+                        document.getElementById('task-list-content').classList.remove('list-view', 'hidden');
+                        document.getElementById('task-list-content').classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4');
+                        document.getElementById('calendar-view').classList.add('hidden');
+                    } else if (view === "calendar") {
+                        document.getElementById('task-list-content').classList.add('hidden');
+                        document.getElementById('calendar-view').classList.remove('hidden');
+                    } else {
+                        document.getElementById('task-list-content').classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4', 'hidden');
+                        document.getElementById('task-list-content').classList.add('list-view');
+                        document.getElementById('calendar-view').classList.add('hidden');
                     }
                 }
             }
         }
-    };
 
-    const ctx = document.getElementById('priority-chart').getContext('2d');
-    if (window.myPieChart) {
-        window.myPieChart.destroy();
-    }
-    window.myPieChart = new Chart(ctx, config);
-}
-
-// Function to lighten or darken a color
-function shadeColor(color, shade) {
-    const colorRegex = /#([0-9A-Fa-f]{6})/;
-    if (colorRegex.test(color)) {
-        let colorVal = color.match(colorRegex)[1];
-        let r = parseInt(colorVal.substr(0, 2), 16);
-        let g = parseInt(colorVal.substr(2, 2), 16);
-        let b = parseInt(colorVal.substr(4, 2), 16);
-
-        r = Math.min(255, Math.max(0, Math.floor(r * shade)));
-        g = Math.min(255, Math.max(0, Math.floor(g * shade)));
-        b = Math.min(255, Math.max(0, Math.floor(b * shade)));
-
-        return `rgb(${r},${g},${b})`;
-    }
-    return color; // Return original color if format doesn't match
-}
-
-        
-        // Event Listeners
         document.getElementById('task-form').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const taskName = document.getElementById('task-name').value;
+            const name = document.getElementById('task-name').value;
             const urgency = parseInt(document.getElementById('urgency').value);
             const importance = parseInt(document.getElementById('importance').value);
             const effort = parseFloat(document.getElementById('effort').value);
 
-            const task = {
-                name: taskName,
-                urgency: urgency,
-                importance: importance,
-                effort: effort
-            };
+            console.log("Form submitted with values:", { name, urgency, importance, effort });
 
-            tasks.push(task);
+            tasks.push({ name, urgency, importance, effort });
+
             saveTasksToCookies();
             updateTaskList();
-            this.reset(); // Reset the form after submission
+
+            document.getElementById('task-form').reset();
         });
 
-        // Load tasks on page load
-        loadTasksFromCookies();
-        updateTaskList();
-    </script>
+        document.getElementById('time-slot-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            document.getElementById('start-time').disabled = true;
+            document.getElementById('end-time').disabled = true;
+            document.getElementById('break-time').disabled = true;
+            saveTimeSlotsToCookies();
+            allocateTimeSlots(tasks);
+            updateTaskList();
+        });
 
+        document.getElementById('reset-time-slots-button').addEventListener('click', function () {
+            document.getElementById('start-time').value = "09:00";
+            document.getElementById('end-time').value = "17:00";
+            document.getElementById('break-time').value = "60";
+            document.getElementById('start-time').disabled = false;
+            document.getElementById('end-time').disabled = false;
+            document.getElementById('break-time').disabled = false;
+            allocateTimeSlots(tasks);
+            updateTaskList();
+            alert("Time allocation has been reset. Current task allocations have been updated.");
+        });
+
+        document.getElementById('start-time').addEventListener('change', function () {
+            allocateTimeSlots(tasks);
+            updateTaskList();
+        });
+
+        document.getElementById('end-time').addEventListener('change', function () {
+            allocateTimeSlots(tasks);
+            updateTaskList();
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log("Document loaded.");
+            loadTasksFromCookies();
+            loadTimeSlotsFromCookies();
+            loadViewPreferenceFromCookies();
+            updateTaskList();
+            updateCompletedTaskList();
+
+            const clearAllButton = document.createElement('button');
+            clearAllButton.textContent = 'Clear All Tasks';
+            clearAllButton.classList.add('w-full', 'bg-red-500', 'text-white', 'p-3', 'rounded-lg', 'shadow-md', 'hover:bg-red-600', 'transition', 'duration-200', 'mt-6');
+            clearAllButton.onclick = clearAllTasks;
+            document.querySelector('.container').appendChild(clearAllButton);
+
+            const togglePriorityTaskButton = document.getElementById('toggle-priority-task');
+            const priorityChartContainer = document.getElementById('priority-chart-container');
+            togglePriorityTaskButton.addEventListener('click', function () {
+                const isCollapsed = priorityChartContainer.classList.toggle('hidden');
+                togglePriorityTaskButton.innerHTML = isCollapsed ? '<i class="fa fa-chevron-down"></i>' : '<i class="fa fa-chevron-up"></i>';
+                savePriorityTaskStateToCookies(isCollapsed);
+            });
+
+            document.getElementById('grid-view-button').addEventListener('click', function () {
+                document.getElementById('task-list-content').classList.remove('list-view', 'hidden');
+                document.getElementById('task-list-content').classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4');
+                document.getElementById('calendar-view').classList.add('hidden');
+                saveViewPreferenceToCookies('grid');
+            });
+
+            document.getElementById('list-view-button').addEventListener('click', function () {
+                document.getElementById('task-list-content').classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4', 'hidden');
+                document.getElementById('task-list-content').classList.add('list-view');
+                document.getElementById('calendar-view').classList.add('hidden');
+                saveViewPreferenceToCookies('list');
+            });
+
+            document.getElementById('calendar-view-button').addEventListener('click', function () {
+                document.getElementById('task-list-content').classList.add('hidden');
+                document.getElementById('calendar-view').classList.remove('hidden');
+                saveViewPreferenceToCookies('calendar');
+                renderCalendar();
+            });
+
+            document.getElementById('task-list-content').classList.add('list-view');
+        });
+
+        function renderCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: tasks.map(task => ({
+                    title: task.name,
+                    start: new Date(),
+                    allDay: true
+                }))
+            });
+            calendar.render();
+        }
+
+        function filterTasks() {
+            const searchInput = document.getElementById('task-search').value.toLowerCase();
+            const filteredTasks = tasks.filter(task => task.name.toLowerCase().includes(searchInput));
+            updateTaskList(filteredTasks);
+        }
+    </script>
 </body>
 
 </html>
