@@ -234,7 +234,7 @@
             const completedTask = tasks[index];
             if (completedTask) {
                 completedTask.completedTime = new Date().toLocaleString();
-                tasks[index] = completedTask; // Update the task in the array
+                tasks.splice(index, 1); // Remove the task from the array
                 saveTasksToLocalStorage();
                 updateTaskList();
                 addAchievement("Task Completed", `You have completed the task: ${completedTask.name}`);
@@ -569,10 +569,10 @@
             tasksStatusChart = new Chart(tasksStatusChartCtx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Completed', 'Pending'],
+                    labels: ['', 'Pending'],
                     datasets: [{
-                        data: [completedTasks, pendingTasks],
-                        backgroundColor: ['#4CAF50', '#FF9800']
+                        data: [ pendingTasks],
+                        backgroundColor: [ '#FF9800']
                     }]
                 }
             });
