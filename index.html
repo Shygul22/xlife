@@ -21,60 +21,63 @@
 <body class="bg-gray-100 text-gray-900 font-sans">
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-semibold text-center mb-6">Task Prioritization Tool</h1>
-
+        <button id="export-tasks-button" class="mb-4 p-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500">
+            Export Tasks to CSV
+        </button>
         <div class="flex flex-col lg:flex-row lg:space-x-6">
             <div class="flex flex-col space-y-6 lg:w-1/3">
-                <!-- Task Form -->
-                <form id="task-form" class="space-y-4 bg-white p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
-                    <div class="space-y-2">
-                        <input type="text" id="task-name" placeholder="Task Name" required
-                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="space-y-2">
-                        <label for="urgency" class="block text-sm font-medium">Urgency:</label>
-                        <select id="urgency" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="" disabled selected>Select Urgency</option>
-                            <option value="1">1 - Low</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5 - High</option>
-                        </select>
-                    </div>
-                    <div class="space-y-2">
-                        <label for="importance" class="block text-sm font-medium">Importance:</label>
-                        <select id="importance" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <option value="" disabled selected>Select Importance</option>
-                            <option value="1">1 - Low</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5 - High</option>
-                        </select>
-                    </div>
-                    <div class="space-y-2">
-                        <label for="effort" class="block text-sm font-medium">Effort (hours):</label>
-                        <input type="number" id="effort" min="0.0" max="24" step="0.5" required
-                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="space-y-2">
-                        <label for="task-due-date" class="block text-sm font-medium">Due Date:</label>
-                        <input type="date" id="task-due-date" 
-                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    </div>
-                    <div class="space-y-2">
-                        <label for="task-description" class="block text-sm font-medium">Description:</label>
-                        <textarea id="task-description" rows="3" 
-                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                    </div>
-                    <button type="submit" id="submit-button"
-                        class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        Add Task
-                    </button>
-                </form>
+                <div id="task-form-container" class="bg-white p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                    <h2 class="text-3xl font-semibold text-gray-900 mb-4">Task Form</h2>
+                    <form id="task-form" class="space-y-4">
+                        <div class="space-y-2">
+                            <input type="text" id="task-name" placeholder="Task Name" required
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="urgency" class="block text-sm font-medium">Urgency:</label>
+                            <select id="urgency" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="" disabled selected>Select Urgency</option>
+                                <option value="1">1 - Low</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5 - High</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="importance" class="block text-sm font-medium">Importance:</label>
+                            <select id="importance" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="" disabled selected>Select Importance</option>
+                                <option value="1">1 - Low</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5 - High</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="effort" class="block text-sm font-medium">Effort (hours):</label>
+                            <input type="number" id="effort" min="0.0" max="24" step="0.5" required
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="task-due-date" class="block text-sm font-medium">Due Date:</label>
+                            <input type="date" id="task-due-date" 
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div class="space-y-2">
+                            <label for="task-description" class="block text-sm font-medium">Description:</label>
+                            <textarea id="task-description" rows="3" 
+                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        </div>
+                        <button type="submit" id="submit-button"
+                            class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Add Task
+                        </button>
+                    </form>
+                </div>
 
-                <!-- Time Slot Definition Section -->
-                <div id="time-slot-definition" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
+                <div id="time-slot-definition-container" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
                     <h2 class="text-3xl font-semibold text-gray-900 mb-4">Define Time Slots</h2>
                     <form id="time-slot-form" class="space-y-4">
                         <div class="space-y-2">
@@ -105,10 +108,8 @@
             </div>
 
             <div class="flex flex-col space-y-6 lg:w-2/3">
-                <!-- Task Lists -->
                 <div id="task-list" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
                     <h2 class="text-3xl font-semibold text-gray-900 mb-4"> Tasks</h2>
-                    <!-- Search Input Field -->
                     <div class="flex flex-col sm:flex-row justify-between mb-4 space-y-4 sm:space-y-0">
                         <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="filterTasks()"
                             class="p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -126,6 +127,7 @@
                     </div>
                     <div id="task-list-content" class="mt-4 list-view">
                         <!-- Tasks will be injected here -->
+                        <p id="no-tasks-message" class="hidden text-gray-500">No tasks available. Please add some.</p>
                     </div>
                     <div id="calendar-view" class="hidden mt-4">
                         <div id="calendar"></div>
@@ -135,30 +137,57 @@
                     </button>
                 </div>
 
-                <!-- Top Priority Task Section -->
+                <div id="completed-task-list" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
+                    <h2 class="text-3xl font-semibold text-gray-900 mb-4"> Completed Tasks</h2>
+                    <div id="completed-task-content" class="space-y-4">
+                        <!-- Completed tasks will be displayed here -->
+                    </div>
+                </div>
+
                 <div id="top-priority-task-container" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105 resize-y overflow-auto">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-3xl font-semibold text-gray-900">Top Priority Task</h2>
-                        <button id="toggle-priority-task" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <h2 class="text-3xl font-semibold text-gray-900">Dashboard</h2>
+                        <button id="toggle-dashboard" class="text-gray-500 hover:text-gray-700 focus:outline-none">
                             <i class="fa fa-chevron-up"></i>
                         </button>
                     </div>
-                    <div id="priority-chart-container" class="mt-4 flex justify-center">
-                        <canvas id="priority-chart" class="w-6 h-6"></canvas>
+                    <div id="dashboard-container" class="mt-4 flex flex-col space-y-4">
+                        <div class="bg-blue-100 p-4 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold text-gray-800">Total Tasks</h3>
+                            <p id="total-tasks" class="text-lg text-gray-700">0</p>
+                        </div>
+                        <div class="bg-green-100 p-4 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold text-gray-800">Completed Tasks</h3>
+                            <p id="completed-tasks" class="text-lg text-gray-700">0</p>
+                        </div>
+                        <div class="bg-yellow-100 p-4 rounded-lg shadow-md">
+                            <h3 class="text-xl font-semibold text-gray-800">Pending Tasks</h3>
+                            <p id="pending-tasks" class="text-lg text-gray-700">0</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="completed-task-section" class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
-            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Completed Tasks</h2>
-            <div id="completed-task-list" class="mt-4 space-y-4"></div>
+        <div id="gamification-section-container" class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
+            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Achievements</h2>
+            <div id="gamification-section-content">
+                <div id="achievements-list" class="mt-4 space-y-4"></div>
+                <button id="clear-achievements-button" class="w-full bg-red-500 text-white p-3 rounded-lg shadow-md hover:bg-red-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 mt-4">
+                    Clear Achievements
+                </button>
+            </div>
         </div>
 
-        <!-- Gamification Section -->
-        <div id="gamification-section" class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
-            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Achievements</h2>
-            <div id="achievements-list" class="mt-4 space-y-4"></div>
+        <div id="progress-tracking-section-container" class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
+            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Progress Tracking</h2>
+            <div id="progress-tracking-section-content">
+                <div id="progress-bar" class="w-full bg-gray-200 rounded-full h-6 mb-4">
+                    <div id="progress-bar-fill" class="bg-blue-500 h-6 rounded-full" style="width: 0%;"></div>
+                </div>
+                <div id="level-info" class="text-lg font-semibold text-gray-900">Level: 1</div>
+                <div id="points-info" class="text-lg font-semibold text-gray-900">Points: 0</div>
+            </div>
         </div>
     </div>
 
@@ -166,6 +195,8 @@
         let tasks = [];
         let completedTasks = [];
         let achievements = [];
+        let points = 0;
+        let level = 1;
 
         function saveTasksToLocalStorage() {
             try {
@@ -255,6 +286,9 @@
 
                 // Add achievement for completing a task
                 addAchievement("Task Completed", `You have completed the task: ${completedTask.name}`);
+
+                // Add points for completing a task
+                addPoints(10); // Example: Each task completion adds 10 points
             }
         }
 
@@ -294,6 +328,12 @@
 
         function updateTaskList(filteredTasks = tasks) {
             console.log("Updating task list:", filteredTasks);
+            const noTasksMessage = document.getElementById('no-tasks-message');
+            if (filteredTasks.length === 0) {
+                noTasksMessage.classList.remove('hidden');
+            } else {
+                noTasksMessage.classList.add('hidden');
+            }
             filteredTasks.forEach(task => {
                 task.priorityScore = (0.5 * task.importance + 0.4 * task.urgency - 0.1 * task.effort) || 0;
             });
@@ -333,11 +373,12 @@
             });
 
             updatePieChart(filteredTasks);
+            updateDashboard();
         }
 
         function updateCompletedTaskList() {
             console.log("Updating completed task list:", completedTasks);
-            const completedTaskList = document.getElementById('completed-task-list');
+            const completedTaskList = document.getElementById('completed-task-content');
             completedTaskList.innerHTML = '';
 
             completedTasks.forEach((task, index) => {
@@ -359,6 +400,7 @@
                 `;
                 completedTaskList.appendChild(taskDiv);
             });
+            updateDashboard();
         }
 
         function updatePieChart(tasks) {
@@ -415,12 +457,14 @@
                 }
             };
 
-            const ctx = document.getElementById('priority-chart').getContext('2d');
-            if (window.myPieChart) {
-                console.log("Destroying existing pie chart.");
-                window.myPieChart.destroy();
+            const ctx = document.getElementById('priority-chart')?.getContext('2d');
+            if (ctx) {
+                if (window.myPieChart) {
+                    console.log("Destroying existing pie chart.");
+                    window.myPieChart.destroy();
+                }
+                window.myPieChart = new Chart(ctx, config);
             }
-            window.myPieChart = new Chart(ctx, config);
         }
 
         function allocateTimeSlots(tasks, startTimeDecimal = null) {
@@ -435,7 +479,7 @@
                 // Skip completed tasks
                 if (task.completedTime) return;
 
-                if (currentTime + task.effort + breakTime <= endDecimalTime) {
+                if (!task.scheduledTime && currentTime + task.effort + breakTime <= endDecimalTime) {
                     // Allocate time for the task
                     task.scheduledTime = `${formatTime(currentTime)} - ${formatTime(currentTime + task.effort)}`;
                     currentTime += task.effort + breakTime;
@@ -533,6 +577,65 @@
             });
         }
 
+        function updateProgress() {
+            const progressBarFill = document.getElementById('progress-bar-fill');
+            const levelInfo = document.getElementById('level-info');
+            const pointsInfo = document.getElementById('points-info');
+
+            const pointsForNextLevel = level * 100;
+            const progressPercentage = (points / pointsForNextLevel) * 100;
+
+            progressBarFill.style.width = `${progressPercentage}%`;
+            levelInfo.textContent = `Level: ${level}`;
+            pointsInfo.textContent = `Points: ${points}`;
+
+            if (points >= pointsForNextLevel) {
+                level++;
+                points = 0;
+                alert(`Congratulations! You've reached Level ${level}!`);
+            }
+
+            saveProgressToLocalStorage();
+        }
+
+        function addPoints(taskPoints) {
+            points += taskPoints;
+            updateProgress();
+        }
+
+        function clearAchievements() {
+            achievements = [];
+            saveAchievementsToLocalStorage();
+            updateAchievementsList();
+        }
+
+        document.getElementById('clear-achievements-button').addEventListener('click', clearAchievements);
+
+        function saveProgressToLocalStorage() {
+            try {
+                localStorage.setItem("points", points);
+                localStorage.setItem("level", level);
+            } catch (e) {
+                console.error("Error saving progress to localStorage:", e);
+            }
+        }
+
+        function loadProgressFromLocalStorage() {
+            try {
+                points = parseInt(localStorage.getItem("points")) || 0;
+                level = parseInt(localStorage.getItem("level")) || 1;
+                updateProgress();
+            } catch (e) {
+                console.error("Error loading progress from localStorage:", e);
+            }
+        }
+
+        function updateDashboard() {
+            document.getElementById('total-tasks').textContent = tasks.length + completedTasks.length;
+            document.getElementById('completed-tasks').textContent = completedTasks.length;
+            document.getElementById('pending-tasks').textContent = tasks.length;
+        }
+
         document.getElementById('task-form').addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -545,7 +648,8 @@
 
             console.log("Form submitted with values:", { name, urgency, importance, effort, dueDate, description });
 
-            tasks.push({ name, urgency, importance, effort, dueDate, description });
+            const newTask = { name, urgency, importance, effort, dueDate, description };
+            tasks.push(newTask);
 
             saveTasksToLocalStorage();
             allocateTimeSlots(tasks); // Automatically allocate time slots for tasks
@@ -593,6 +697,7 @@
             loadTimeSlotsFromLocalStorage();
             loadViewPreferenceFromLocalStorage();
             loadAchievementsFromLocalStorage();
+            loadProgressFromLocalStorage();
             updateTaskList();
             updateCompletedTaskList();
 
@@ -632,6 +737,15 @@
             });
 
             document.getElementById('task-list-content').classList.add('list-view');
+            updateProgress();
+            updateDashboard();
+
+            const toggleDashboardButton = document.getElementById('toggle-dashboard');
+            const dashboardContainer = document.getElementById('dashboard-container');
+            toggleDashboardButton.addEventListener('click', function () {
+                const isCollapsed = dashboardContainer.classList.toggle('hidden');
+                toggleDashboardButton.innerHTML = isCollapsed ? '<i class="fa fa-chevron-down"></i>' : '<i class="fa fa-chevron-up"></i>';
+            });
         });
 
         function renderCalendar() {
@@ -651,6 +765,24 @@
             const searchInput = document.getElementById('task-search').value.toLowerCase();
             const filteredTasks = tasks.filter(task => task.name.toLowerCase().includes(searchInput));
             updateTaskList(filteredTasks);
+        }
+
+        document.getElementById('export-tasks-button').addEventListener('click', function () {
+            exportTasksToCSV();
+        });
+
+        function exportTasksToCSV() {
+            const csvContent = "data:text/csv;charset=utf-8,"
+                + "Task Name,Urgency,Importance,Effort (hours),Due Date,Description\n"
+                + tasks.map(task => `${task.name},${task.urgency},${task.importance},${task.effort},${task.dueDate},${task.description}`).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "tasks.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>
