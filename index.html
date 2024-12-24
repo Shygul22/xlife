@@ -21,63 +21,59 @@
 <body class="bg-gray-100 text-gray-900 font-sans">
     <div class="container mx-auto p-6">
         <h1 class="text-3xl font-semibold text-center mb-6">Task Prioritization Tool</h1>
-        <button id="export-tasks-button" class="mb-4 p-2 bg-green-500 text-white rounded-lg shadow-md hover:bg-green-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500">
-            Export Tasks to CSV
-        </button>
+
         <div class="flex flex-col lg:flex-row lg:space-x-6">
             <div class="flex flex-col space-y-6 lg:w-1/3">
-                <div id="task-form-container" class="bg-white p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
-                    <h2 class="text-3xl font-semibold text-gray-900 mb-4">Task Form</h2>
-                    <form id="task-form" class="space-y-4">
-                        <div class="space-y-2">
-                            <input type="text" id="task-name" placeholder="Task Name" required
-                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div class="space-y-2">
-                            <label for="urgency" class="block text-sm font-medium">Urgency:</label>
-                            <select id="urgency" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="" disabled selected>Select Urgency</option>
-                                <option value="1">1 - Low</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5 - High</option>
-                            </select>
-                        </div>
-                        <div class="space-y-2">
-                            <label for="importance" class="block text-sm font-medium">Importance:</label>
-                            <select id="importance" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="" disabled selected>Select Importance</option>
-                                <option value="1">1 - Low</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5 - High</option>
-                            </select>
-                        </div>
-                        <div class="space-y-2">
-                            <label for="effort" class="block text-sm font-medium">Effort (hours):</label>
-                            <input type="number" id="effort" min="0.0" max="24" step="0.5" required
-                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div class="space-y-2">
-                            <label for="task-due-date" class="block text-sm font-medium">Due Date:</label>
-                            <input type="date" id="task-due-date" 
-                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        </div>
-                        <div class="space-y-2">
-                            <label for="task-description" class="block text-sm font-medium">Description:</label>
-                            <textarea id="task-description" rows="3" 
-                                class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                        </div>
-                        <button type="submit" id="submit-button"
-                            class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            Add Task
-                        </button>
-                    </form>
-                </div>
+                <!-- Task Form -->
+                <form id="task-form" class="space-y-4 bg-white p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105">
+                    <div class="space-y-2">
+                        <input type="text" id="task-name" placeholder="Task Name" required
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="urgency" class="block text-sm font-medium">Urgency:</label>
+                        <select id="urgency" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="" disabled selected>Select Urgency</option>
+                            <option value="1">1 - Low</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5 - High</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="importance" class="block text-sm font-medium">Importance:</label>
+                        <select id="importance" required class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="" disabled selected>Select Importance</option>
+                            <option value="1">1 - Low</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5 - High</option>
+                        </select>
+                    </div>
+                    <div class="space-y-2">
+                        <label for="effort" class="block text-sm font-medium">Effort (hours):</label>
+                        <input type="number" id="effort" min="0.0" max="24" step="0.5" required
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="task-due-date" class="block text-sm font-medium">Due Date:</label>
+                        <input type="date" id="task-due-date" 
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="task-description" class="block text-sm font-medium">Description:</label>
+                        <textarea id="task-description" rows="3" 
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+                    <button type="submit" id="submit-button" class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Add Task
+                    </button>
+                </form>
 
-                <div id="time-slot-definition-container" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
+                <!-- Time Slot Definition Section -->
+                <div id="time-slot-definition" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
                     <h2 class="text-3xl font-semibold text-gray-900 mb-4">Define Time Slots</h2>
                     <form id="time-slot-form" class="space-y-4">
                         <div class="space-y-2">
@@ -92,7 +88,7 @@
                         </div>
                         <div class="space-y-2">
                             <label for="break-time" class="block text-sm font-medium">Break Time (minutes):</label>
-                            <input type="number" id="break-time" value="60" min="0" required
+                            <input type="number" id="break-time" value="0" min="0" required
                                 class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <button type="submit" id="time-slot-submit-button"
@@ -108,8 +104,10 @@
             </div>
 
             <div class="flex flex-col space-y-6 lg:w-2/3">
+                <!-- Task Lists -->
                 <div id="task-list" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
                     <h2 class="text-3xl font-semibold text-gray-900 mb-4"> Tasks</h2>
+                    <!-- Search Input Field -->
                     <div class="flex flex-col sm:flex-row justify-between mb-4 space-y-4 sm:space-y-0">
                         <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="filterTasks()"
                             class="p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -127,7 +125,6 @@
                     </div>
                     <div id="task-list-content" class="mt-4 list-view">
                         <!-- Tasks will be injected here -->
-                        <p id="no-tasks-message" class="hidden text-gray-500">No tasks available. Please add some.</p>
                     </div>
                     <div id="calendar-view" class="hidden mt-4">
                         <div id="calendar"></div>
@@ -135,82 +132,51 @@
                     <button onclick="bulkDeleteTasks('pending')" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-lg">
                         <i class="fa fa-trash mr-2"></i> Bulk Delete Selected Tasks
                     </button>
+                    <button onclick="clearAllTasks()" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-lg">
+                        <i class="fa fa-trash mr-2"></i> Clear All Tasks
+                    </button>
                 </div>
 
-                <div id="completed-task-list" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
-                    <h2 class="text-3xl font-semibold text-gray-900 mb-4"> Completed Tasks</h2>
-                    <div id="completed-task-content" class="space-y-4">
-                        <!-- Completed tasks will be displayed here -->
-                    </div>
-                </div>
-
-                <div id="top-priority-task-container" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105 resize-y overflow-auto">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-3xl font-semibold text-gray-900">Dashboard</h2>
-                        <button id="toggle-dashboard" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                            <i class="fa fa-chevron-up"></i>
-                        </button>
-                    </div>
-                    <div id="dashboard-container" class="mt-4 flex flex-col space-y-4">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
+                    <h2 class="text-3xl font-semibold text-gray-900 mb-4">Dashboard</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div class="bg-blue-100 p-4 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold text-gray-800">Total Tasks</h3>
-                            <p id="total-tasks" class="text-lg text-gray-700">0</p>
+                            <h3 class="text-xl font-semibold text-gray-800">Tasks Completed vs. Pending</h3>
+                            <canvas id="tasks-status-chart"></canvas>
                         </div>
                         <div class="bg-green-100 p-4 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold text-gray-800">Completed Tasks</h3>
-                            <p id="completed-tasks" class="text-lg text-gray-700">0</p>
+                            <h3 class="text-xl font-semibold text-gray-800">Average Priority Score</h3>
+                            <canvas id="average-priority-chart"></canvas>
                         </div>
                         <div class="bg-yellow-100 p-4 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold text-gray-800">Pending Tasks</h3>
-                            <p id="pending-tasks" class="text-lg text-gray-700">0</p>
+                            <h3 class="text-xl font-semibold text-gray-800">Effort Distribution</h3>
+                            <canvas id="effort-distribution-chart"></canvas>
                         </div>
+                    </div>
+                    <div class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
+                        <h2 class="text-3xl font-semibold text-gray-900 mb-4">Achievements</h2>
+                        <div id="achievements-list" class="mt-4 space-y-4"></div>
+                        <button onclick="clearAchievements()" class="w-full bg-red-500 text-white p-3 rounded-lg shadow-md hover:bg-red-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 mt-4">
+                            Clear Achievements
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div id="gamification-section-container" class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
-            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Achievements</h2>
-            <div id="gamification-section-content">
-                <div id="achievements-list" class="mt-4 space-y-4"></div>
-                <button id="clear-achievements-button" class="w-full bg-red-500 text-white p-3 rounded-lg shadow-md hover:bg-red-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 mt-4">
-                    Clear Achievements
-                </button>
-            </div>
-        </div>
-
-        <div id="progress-tracking-section-container" class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
-            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Progress Tracking</h2>
-            <div id="progress-tracking-section-content">
-                <div id="progress-bar" class="w-full bg-gray-200 rounded-full h-6 mb-4">
-                    <div id="progress-bar-fill" class="bg-blue-500 h-6 rounded-full" style="width: 0%;"></div>
-                </div>
-                <div id="level-info" class="text-lg font-semibold text-gray-900">Level: 1</div>
-                <div id="points-info" class="text-lg font-semibold text-gray-900">Points: 0</div>
-            </div>
-        </div>
+        <!-- Removed Completed Tasks Section -->
     </div>
 
     <script>
         let tasks = [];
-        let completedTasks = [];
         let achievements = [];
-        let points = 0;
-        let level = 1;
+        let tasksStatusChart, averagePriorityChart, effortDistributionChart;
 
         function saveTasksToLocalStorage() {
             try {
                 localStorage.setItem("tasks", JSON.stringify(tasks));
             } catch (e) {
                 console.error("Error saving tasks to localStorage:", e);
-            }
-        }
-
-        function saveCompletedTasksToLocalStorage() {
-            try {
-                localStorage.setItem("completedTasks", JSON.stringify(completedTasks));
-            } catch (e) {
-                console.error("Error saving completed tasks to localStorage:", e);
             }
         }
 
@@ -233,7 +199,6 @@
         function loadTasksFromLocalStorage() {
             try {
                 tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-                completedTasks = JSON.parse(localStorage.getItem("completedTasks")) || [];
                 const isCollapsed = localStorage.getItem("priorityTaskCollapsed") === 'true';
                 const priorityChartContainer = document.getElementById('priority-chart-container');
                 const togglePriorityTaskButton = document.getElementById('toggle-priority-task');
@@ -258,50 +223,34 @@
             }
         }
 
-        function deleteTask(index, type) {
-            console.log(`Deleting task at index ${index} from ${type} tasks.`);
-            if (type === 'pending') {
-                tasks.splice(index, 1);
-                saveTasksToLocalStorage();
-                updateTaskList();
-            } else if (type === 'completed') {
-                completedTasks.splice(index, 1);
-                saveCompletedTasksToLocalStorage();
-                updateCompletedTaskList();
-            }
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            saveTasksToLocalStorage();
+            updateTaskList();
+            updateDashboard(); // Update dashboard after deleting a task
         }
 
         function completeTask(index) {
-            console.log(`Completing task at index ${index}.`);
-            const completedTask = tasks.splice(index, 1)[0];
+            const completedTask = tasks[index];
             if (completedTask) {
                 completedTask.completedTime = new Date().toLocaleString();
-                completedTasks.push(completedTask);
-
-                saveTasksToLocalStorage();         // Save updated task list
-                saveCompletedTasksToLocalStorage(); // Save completed tasks
-
-                updateTaskList(); // Update the task list without reallocating time slots
-                updateCompletedTaskList(); // Refresh the completed task list
-
-                // Add achievement for completing a task
+                tasks[index] = completedTask; // Update the task in the array
+                saveTasksToLocalStorage();
+                updateTaskList();
                 addAchievement("Task Completed", `You have completed the task: ${completedTask.name}`);
-
-                // Add points for completing a task
-                addPoints(10); // Example: Each task completion adds 10 points
+                updateDashboard(); // Update dashboard after completing a task
             }
         }
 
         function bulkDeleteTasks(type) {
-            console.log(`Performing bulk delete on ${type} tasks.`);
             let selectedTasks = [];
             if (type === 'pending') {
                 selectedTasks = Array.from(document.querySelectorAll('.task-checkbox:checked')).map(checkbox => parseInt(checkbox.dataset.index));
-                console.log("Selected tasks for deletion:", selectedTasks);
                 tasks = tasks.filter((task, index) => !selectedTasks.includes(index));
                 saveTasksToLocalStorage();
                 updateTaskList();
             }
+            updateDashboard(); // Update dashboard after bulk deleting tasks
         }
 
         function editTask(index) {
@@ -312,28 +261,19 @@
             document.getElementById('effort').value = task.effort;
             document.getElementById('task-due-date').value = task.dueDate;
             document.getElementById('task-description').value = task.description;
-            deleteTask(index, 'pending');
+            deleteTask(index);
         }
 
         function clearAllTasks() {
             if (confirm("Are you sure you want to clear all tasks?")) {
                 tasks = [];
-                completedTasks = [];
                 saveTasksToLocalStorage();
-                saveCompletedTasksToLocalStorage();
                 updateTaskList();
-                updateCompletedTaskList();
             }
+            updateDashboard(); // Update dashboard after clearing all tasks
         }
 
         function updateTaskList(filteredTasks = tasks) {
-            console.log("Updating task list:", filteredTasks);
-            const noTasksMessage = document.getElementById('no-tasks-message');
-            if (filteredTasks.length === 0) {
-                noTasksMessage.classList.remove('hidden');
-            } else {
-                noTasksMessage.classList.add('hidden');
-            }
             filteredTasks.forEach(task => {
                 task.priorityScore = (0.5 * task.importance + 0.4 * task.urgency - 0.1 * task.effort) || 0;
             });
@@ -364,107 +304,14 @@
                         <button onclick="editTask(${index})" class="flex-1 text-white bg-yellow-500 hover:bg-yellow-600 rounded-lg p-2">
                             <i class="fa fa-edit mr-2"></i> Edit
                         </button>
-                        <button onclick="deleteTask(${index}, 'pending')" class="flex-1 text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
+                        <button onclick="deleteTask(${index})" class="flex-1 text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
                             <i class="fa fa-trash mr-2"></i> Delete
                         </button>
                     </div>
                 `;
                 taskListContent.appendChild(taskDiv);
             });
-
-            updatePieChart(filteredTasks);
-            updateDashboard();
-        }
-
-        function updateCompletedTaskList() {
-            console.log("Updating completed task list:", completedTasks);
-            const completedTaskList = document.getElementById('completed-task-content');
-            completedTaskList.innerHTML = '';
-
-            completedTasks.forEach((task, index) => {
-                const taskDiv = document.createElement('div');
-                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
-                taskDiv.innerHTML = `
-                    <div class="flex items-center space-x-4">
-                        <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong>
-                        <div class="text-sm text-gray-600">
-                            Urgency: ${task.urgency}, Importance: ${task.importance}, Effort: ${task.effort} hrs<br>
-                            Priority Score: <span class="font-bold">${task.priorityScore.toFixed(2)}</span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2 mt-2">
-                        <button onclick="deleteTask(${index}, 'completed')" class="flex-1 text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
-                            <i class="fa fa-trash mr-2"></i> Delete
-                        </button>
-                    </div>
-                `;
-                completedTaskList.appendChild(taskDiv);
-            });
-            updateDashboard();
-        }
-
-        function updatePieChart(tasks) {
-            console.log("Updating pie chart with tasks:", tasks);
-            const taskNames = tasks.map(task => {
-                let priorityLabel = '';
-                if (task.priorityScore >= 4) {
-                    priorityLabel = `High: ${task.name}`;
-                } else if (task.priorityScore >= 2) {
-                    priorityLabel = `Medium: ${task.name}`;
-                } else {
-                    priorityLabel = `Low: ${task.name}`;
-                }
-                return priorityLabel;
-            });
-
-            const colors = [
-                '#FF6B6B', '#FF9F80', '#FFCC5C', '#FF9F3D', '#FFD700', 
-                '#4CAF50', '#8BC34A', '#FFEB3B', '#8D6E63', '#00B0FF', 
-                '#FF4081', '#9C27B0', '#E91E63', '#F44336', '#9E9D24'
-            ];
-
-            const data = {
-                labels: taskNames,
-                datasets: [{
-                    data: tasks.map(task => 1),
-                    backgroundColor: tasks.map((task, index) => colors[index % colors.length]),
-                }]
-            };
-
-            const config = {
-                type: 'pie',
-                data: data,
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                font: {
-                                    size: 10
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function (tooltipItem) {
-                                    const label = tooltipItem.label;
-                                    return `${label}: 1 task`;
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-
-            const ctx = document.getElementById('priority-chart')?.getContext('2d');
-            if (ctx) {
-                if (window.myPieChart) {
-                    console.log("Destroying existing pie chart.");
-                    window.myPieChart.destroy();
-                }
-                window.myPieChart = new Chart(ctx, config);
-            }
+            updateDashboard(); // Ensure dashboard is updated after updating the task list
         }
 
         function allocateTimeSlots(tasks, startTimeDecimal = null) {
@@ -479,7 +326,7 @@
                 // Skip completed tasks
                 if (task.completedTime) return;
 
-                if (!task.scheduledTime && currentTime + task.effort + breakTime <= endDecimalTime) {
+                if (currentTime + task.effort + breakTime <= endDecimalTime) {
                     // Allocate time for the task
                     task.scheduledTime = `${formatTime(currentTime)} - ${formatTime(currentTime + task.effort)}`;
                     currentTime += task.effort + breakTime;
@@ -556,6 +403,14 @@
             }
         }
 
+        function clearAchievements() {
+            if (confirm("Are you sure you want to clear all achievements?")) {
+                achievements = [];
+                saveAchievementsToLocalStorage();
+                updateAchievementsList();
+            }
+        }
+
         function addAchievement(title, description) {
             achievements.push({ title, description });
             saveAchievementsToLocalStorage();
@@ -577,65 +432,6 @@
             });
         }
 
-        function updateProgress() {
-            const progressBarFill = document.getElementById('progress-bar-fill');
-            const levelInfo = document.getElementById('level-info');
-            const pointsInfo = document.getElementById('points-info');
-
-            const pointsForNextLevel = level * 100;
-            const progressPercentage = (points / pointsForNextLevel) * 100;
-
-            progressBarFill.style.width = `${progressPercentage}%`;
-            levelInfo.textContent = `Level: ${level}`;
-            pointsInfo.textContent = `Points: ${points}`;
-
-            if (points >= pointsForNextLevel) {
-                level++;
-                points = 0;
-                alert(`Congratulations! You've reached Level ${level}!`);
-            }
-
-            saveProgressToLocalStorage();
-        }
-
-        function addPoints(taskPoints) {
-            points += taskPoints;
-            updateProgress();
-        }
-
-        function clearAchievements() {
-            achievements = [];
-            saveAchievementsToLocalStorage();
-            updateAchievementsList();
-        }
-
-        document.getElementById('clear-achievements-button').addEventListener('click', clearAchievements);
-
-        function saveProgressToLocalStorage() {
-            try {
-                localStorage.setItem("points", points);
-                localStorage.setItem("level", level);
-            } catch (e) {
-                console.error("Error saving progress to localStorage:", e);
-            }
-        }
-
-        function loadProgressFromLocalStorage() {
-            try {
-                points = parseInt(localStorage.getItem("points")) || 0;
-                level = parseInt(localStorage.getItem("level")) || 1;
-                updateProgress();
-            } catch (e) {
-                console.error("Error loading progress from localStorage:", e);
-            }
-        }
-
-        function updateDashboard() {
-            document.getElementById('total-tasks').textContent = tasks.length + completedTasks.length;
-            document.getElementById('completed-tasks').textContent = completedTasks.length;
-            document.getElementById('pending-tasks').textContent = tasks.length;
-        }
-
         document.getElementById('task-form').addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -648,14 +444,14 @@
 
             console.log("Form submitted with values:", { name, urgency, importance, effort, dueDate, description });
 
-            const newTask = { name, urgency, importance, effort, dueDate, description };
-            tasks.push(newTask);
+            tasks.push({ name, urgency, importance, effort, dueDate, description });
 
             saveTasksToLocalStorage();
             allocateTimeSlots(tasks); // Automatically allocate time slots for tasks
             updateTaskList();
+            updateDashboard(); // Automatically update the dashboard when a task is added
 
-            document.getElementById('task-form').reset();
+            document.getElementById('task-form').reset(); // Reset the form after submission
         });
 
         document.getElementById('time-slot-form').addEventListener('submit', function (e) {
@@ -697,9 +493,7 @@
             loadTimeSlotsFromLocalStorage();
             loadViewPreferenceFromLocalStorage();
             loadAchievementsFromLocalStorage();
-            loadProgressFromLocalStorage();
             updateTaskList();
-            updateCompletedTaskList();
 
             const clearAllButton = document.createElement('button');
             clearAllButton.textContent = 'Clear All Tasks';
@@ -737,15 +531,6 @@
             });
 
             document.getElementById('task-list-content').classList.add('list-view');
-            updateProgress();
-            updateDashboard();
-
-            const toggleDashboardButton = document.getElementById('toggle-dashboard');
-            const dashboardContainer = document.getElementById('dashboard-container');
-            toggleDashboardButton.addEventListener('click', function () {
-                const isCollapsed = dashboardContainer.classList.toggle('hidden');
-                toggleDashboardButton.innerHTML = isCollapsed ? '<i class="fa fa-chevron-down"></i>' : '<i class="fa fa-chevron-up"></i>';
-            });
         });
 
         function renderCalendar() {
@@ -767,22 +552,62 @@
             updateTaskList(filteredTasks);
         }
 
-        document.getElementById('export-tasks-button').addEventListener('click', function () {
-            exportTasksToCSV();
-        });
+        function updateDashboard() {
+            const completedTasks = tasks.filter(task => task.completedTime).length;
+            const pendingTasks = tasks.length - completedTasks;
+            const averagePriority = tasks.reduce((sum, task) => sum + task.priorityScore, 0) / tasks.length || 0;
+            const effortDistribution = tasks.reduce((acc, task) => {
+                acc[task.effort] = (acc[task.effort] || 0) + 1;
+                return acc;
+            }, {});
 
-        function exportTasksToCSV() {
-            const csvContent = "data:text/csv;charset=utf-8,"
-                + "Task Name,Urgency,Importance,Effort (hours),Due Date,Description\n"
-                + tasks.map(task => `${task.name},${task.urgency},${task.importance},${task.effort},${task.dueDate},${task.description}`).join("\n");
+            if (tasksStatusChart) tasksStatusChart.destroy();
+            if (averagePriorityChart) averagePriorityChart.destroy();
+            if (effortDistributionChart) effortDistributionChart.destroy();
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "tasks.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const tasksStatusChartCtx = document.getElementById('tasks-status-chart').getContext('2d');
+            tasksStatusChart = new Chart(tasksStatusChartCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Pending'],
+                    datasets: [{
+                        data: [completedTasks, pendingTasks],
+                        backgroundColor: ['#4CAF50', '#FF9800']
+                    }]
+                }
+            });
+
+            const averagePriorityChartCtx = document.getElementById('average-priority-chart').getContext('2d');
+            averagePriorityChart = new Chart(averagePriorityChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Average Priority'],
+                    datasets: [{
+                        data: [averagePriority],
+                        backgroundColor: ['#2196F3']
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    }
+                }
+            });
+
+            const effortDistributionChartCtx = document.getElementById('effort-distribution-chart').getContext('2d');
+            effortDistributionChart = new Chart(effortDistributionChartCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(effortDistribution),
+                    datasets: [{
+                        data: Object.values(effortDistribution),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
+                    }]
+                }
+            });
         }
     </script>
 </body>
