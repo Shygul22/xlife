@@ -10,6 +10,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <style>
+        .dark-mode {
+            background-color: #1a202c;
+            color: #cbd5e0;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100 text-gray-900 font-sans">
@@ -50,6 +56,16 @@
                         <label for="effort" class="block text-sm font-medium">Effort (hours):</label>
                         <input type="number" id="effort" min="0.0" max="24" step="0.5" required
                             class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="task-due-date" class="block text-sm font-medium">Due Date:</label>
+                        <input type="date" id="task-due-date" 
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="task-description" class="block text-sm font-medium">Description:</label>
+                        <textarea id="task-description" rows="3" 
+                            class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                     </div>
                     <button type="submit" id="submit-button"
                         class="w-full bg-blue-500 text-white p-3 rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -93,7 +109,7 @@
                 <div id="task-list" class="p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
                     <h2 class="text-3xl font-semibold text-gray-900 mb-4"> Tasks</h2>
                     <!-- Search Input Field -->
-                    <div class="flex justify-between mb-4">
+                    <div class="flex flex-col sm:flex-row justify-between mb-4 space-y-4 sm:space-y-0">
                         <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="filterTasks()"
                             class="p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <div class="flex space-x-2">
@@ -138,108 +154,113 @@
             <h2 class="text-3xl font-semibold text-gray-900 mb-4">Completed Tasks</h2>
             <div id="completed-task-list" class="mt-4 space-y-4"></div>
         </div>
+
+        <!-- Gamification Section -->
+        <div id="gamification-section" class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
+            <h2 class="text-3xl font-semibold text-gray-900 mb-4">Achievements</h2>
+            <div id="achievements-list" class="mt-4 space-y-4"></div>
+        </div>
     </div>
 
     <script>
         let tasks = [];
         let completedTasks = [];
+        let achievements = [];
 
-        function saveTasksToCookies() {
+        function saveTasksToLocalStorage() {
             try {
-                document.cookie = "tasks=" + encodeURIComponent(JSON.stringify(tasks)) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+                localStorage.setItem("tasks", JSON.stringify(tasks));
             } catch (e) {
-                console.error("Error saving tasks to cookies:", e);
+                console.error("Error saving tasks to localStorage:", e);
             }
         }
 
-        function saveCompletedTasksToCookies() {
+        function saveCompletedTasksToLocalStorage() {
             try {
-                document.cookie = "completedTasks=" + encodeURIComponent(JSON.stringify(completedTasks)) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+                localStorage.setItem("completedTasks", JSON.stringify(completedTasks));
             } catch (e) {
-                console.error("Error saving completed tasks to cookies:", e);
+                console.error("Error saving completed tasks to localStorage:", e);
             }
         }
 
-        function savePriorityTaskStateToCookies(isCollapsed) {
+        function savePriorityTaskStateToLocalStorage(isCollapsed) {
             try {
-                document.cookie = "priorityTaskCollapsed=" + encodeURIComponent(isCollapsed) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+                localStorage.setItem("priorityTaskCollapsed", isCollapsed);
             } catch (e) {
-                console.error("Error saving priority task state to cookies:", e);
+                console.error("Error saving priority task state to localStorage:", e);
             }
         }
 
-        function loadTasksFromCookies() {
-            const cookies = document.cookie.split("; ");
-            console.log("Loading tasks from cookies:", cookies);
-            for (let cookie of cookies) {
-                const [name, value] = cookie.split("=");
-                if (name === "tasks") {
-                    try {
-                        tasks = JSON.parse(decodeURIComponent(value)) || [];
-                        console.log("Tasks loaded:", tasks);
-                    } catch (e) {
-                        console.error("Error parsing tasks from cookies:", e);
-                        tasks = [];
-                    }
-                } else if (name === "completedTasks") {
-                    try {
-                        completedTasks = JSON.parse(decodeURIComponent(value)) || [];
-                        console.log("Completed tasks loaded:", completedTasks);
-                    } catch (e) {
-                        console.error("Error parsing completed tasks from cookies:", e);
-                        completedTasks = [];
-                    }
-                } else if (name === "priorityTaskCollapsed") {
-                    const isCollapsed = decodeURIComponent(value) === 'true';
-                    const priorityChartContainer = document.getElementById('priority-chart-container');
-                    const togglePriorityTaskButton = document.getElementById('toggle-priority-task');
-                    if (isCollapsed) {
-                        priorityChartContainer.classList.add('hidden');
-                        togglePriorityTaskButton.innerHTML = '<i class="fa fa-chevron-down"></i>';
-                    } else {
-                        priorityChartContainer.classList.remove('hidden');
-                        togglePriorityTaskButton.innerHTML = '<i class="fa fa-chevron-up"></i>';
-                    }
+        function saveAchievementsToLocalStorage() {
+            try {
+                localStorage.setItem("achievements", JSON.stringify(achievements));
+            } catch (e) {
+                console.error("Error saving achievements to localStorage:", e);
+            }
+        }
+
+        function loadTasksFromLocalStorage() {
+            try {
+                tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+                completedTasks = JSON.parse(localStorage.getItem("completedTasks")) || [];
+                const isCollapsed = localStorage.getItem("priorityTaskCollapsed") === 'true';
+                const priorityChartContainer = document.getElementById('priority-chart-container');
+                const togglePriorityTaskButton = document.getElementById('toggle-priority-task');
+                if (isCollapsed) {
+                    priorityChartContainer.classList.add('hidden');
+                    togglePriorityTaskButton.innerHTML = '<i class="fa fa-chevron-down"></i>';
+                } else {
+                    priorityChartContainer.classList.remove('hidden');
+                    togglePriorityTaskButton.innerHTML = '<i class="fa fa-chevron-up"></i>';
                 }
+            } catch (e) {
+                console.error("Error loading tasks from localStorage:", e);
+            }
+        }
+
+        function loadAchievementsFromLocalStorage() {
+            try {
+                achievements = JSON.parse(localStorage.getItem("achievements")) || [];
+                updateAchievementsList();
+            } catch (e) {
+                console.error("Error loading achievements from localStorage:", e);
             }
         }
 
         function deleteTask(index, type) {
-            console.log(`Deleting task at index ${index} from ${type} tasks.`);
             if (type === 'pending') {
                 tasks.splice(index, 1);
-                saveTasksToCookies();
+                saveTasksToLocalStorage();
                 updateTaskList();
             } else if (type === 'completed') {
                 completedTasks.splice(index, 1);
-                saveCompletedTasksToCookies();
+                saveCompletedTasksToLocalStorage();
                 updateCompletedTaskList();
             }
         }
 
         function completeTask(index) {
-            console.log(`Completing task at index ${index}.`);
             const completedTask = tasks.splice(index, 1)[0];
             if (completedTask) {
                 completedTask.completedTime = new Date().toLocaleString();
                 completedTasks.push(completedTask);
 
-                saveTasksToCookies();         // Save updated task list
-                saveCompletedTasksToCookies(); // Save completed tasks
+                saveTasksToLocalStorage();
+                saveCompletedTasksToLocalStorage();
 
-                updateTaskList(); // Update the task list without reallocating time slots
-                updateCompletedTaskList(); // Refresh the completed task list
+                updateTaskList();
+                updateCompletedTaskList();
+
+                addAchievement("Task Completed", `You have completed the task: ${completedTask.name}`);
             }
         }
 
         function bulkDeleteTasks(type) {
-            console.log(`Performing bulk delete on ${type} tasks.`);
             let selectedTasks = [];
             if (type === 'pending') {
                 selectedTasks = Array.from(document.querySelectorAll('.task-checkbox:checked')).map(checkbox => parseInt(checkbox.dataset.index));
-                console.log("Selected tasks for deletion:", selectedTasks);
                 tasks = tasks.filter((task, index) => !selectedTasks.includes(index));
-                saveTasksToCookies();
+                saveTasksToLocalStorage();
                 updateTaskList();
             }
         }
@@ -250,6 +271,8 @@
             document.getElementById('urgency').value = task.urgency;
             document.getElementById('importance').value = task.importance;
             document.getElementById('effort').value = task.effort;
+            document.getElementById('task-due-date').value = task.dueDate;
+            document.getElementById('task-description').value = task.description;
             deleteTask(index, 'pending');
         }
 
@@ -257,15 +280,14 @@
             if (confirm("Are you sure you want to clear all tasks?")) {
                 tasks = [];
                 completedTasks = [];
-                saveTasksToCookies();
-                saveCompletedTasksToCookies();
+                saveTasksToLocalStorage();
+                saveCompletedTasksToLocalStorage();
                 updateTaskList();
                 updateCompletedTaskList();
             }
         }
 
         function updateTaskList(filteredTasks = tasks) {
-            console.log("Updating task list:", filteredTasks);
             filteredTasks.forEach(task => {
                 task.priorityScore = (0.5 * task.importance + 0.4 * task.urgency - 0.1 * task.effort) || 0;
             });
@@ -278,11 +300,19 @@
                 const taskDiv = document.createElement('div');
                 taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
                 taskDiv.innerHTML = `
+            taskListContent.innerHTML = '';
+
+            filteredTasks.forEach((task, index) => {
+                const taskDiv = document.createElement('div');
+                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
+                taskDiv.innerHTML = `
                     <div class="flex items-center space-x-4">
                         <input type="checkbox" class="task-checkbox" data-index="${index}" />
                         <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong>
                         <div class="text-sm text-gray-600">
                             Urgency: ${task.urgency}, Importance: ${task.importance}, Effort: ${task.effort} hrs<br>
+                            Due Date: ${task.dueDate}<br>
+                            Description: ${task.description}<br>
                             Priority Score: <span class="font-bold">${task.priorityScore.toFixed(2)}</span><br>
                             Scheduled Time: ${task.scheduledTime || "Not scheduled"}
                         </div>
@@ -415,7 +445,7 @@
                 }
             });
 
-            saveTasksToCookies(); // Save updated task list with time allocations
+            saveTasksToLocalStorage(); // Save updated task list with time allocations
         }
 
         function convertTimeToDecimal(time) {
@@ -431,62 +461,76 @@
             return `${formattedHour}:${minutes.toString().padStart(2, '0')} ${period}`;
         }
 
-        function saveTimeSlotsToCookies() {
+        function saveTimeSlotsToLocalStorage() {
             try {
                 const startTime = document.getElementById('start-time').value;
                 const endTime = document.getElementById('end-time').value;
                 const breakTime = document.getElementById('break-time').value;
-                document.cookie = "startTime=" + encodeURIComponent(startTime) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
-                document.cookie = "endTime=" + encodeURIComponent(endTime) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
-                document.cookie = "breakTime=" + encodeURIComponent(breakTime) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+                localStorage.setItem("startTime", startTime);
+                localStorage.setItem("endTime", endTime);
+                localStorage.setItem("breakTime", breakTime);
             } catch (e) {
-                console.error("Error saving time slots to cookies:", e);
+                console.error("Error saving time slots to localStorage:", e);
             }
         }
 
-        function loadTimeSlotsFromCookies() {
-            const cookies = document.cookie.split("; ");
-            console.log("Loading time slots from cookies:", cookies);
-            for (let cookie of cookies) {
-                const [name, value] = cookie.split("=");
-                if (name === "startTime") {
-                    document.getElementById('start-time').value = decodeURIComponent(value);
-                } else if (name === "endTime") {
-                    document.getElementById('end-time').value = decodeURIComponent(value);
-                } else if (name === "breakTime") {
-                    document.getElementById('break-time').value = decodeURIComponent(value);
-                }
-            }
-        }
-
-        function saveViewPreferenceToCookies(view) {
+        function loadTimeSlotsFromLocalStorage() {
             try {
-                document.cookie = "viewPreference=" + encodeURIComponent(view) + "; path=/; max-age=" + (60 * 60 * 24 * 7);
+                document.getElementById('start-time').value = localStorage.getItem("startTime") || "09:00";
+                document.getElementById('end-time').value = localStorage.getItem("endTime") || "17:00";
+                document.getElementById('break-time').value = localStorage.getItem("breakTime") || "60";
             } catch (e) {
-                console.error("Error saving view preference to cookies:", e);
+                console.error("Error loading time slots from localStorage:", e);
             }
         }
 
-        function loadViewPreferenceFromCookies() {
-            const cookies = document.cookie.split("; ");
-            for (let cookie of cookies) {
-                const [name, value] = cookie.split("=");
-                if (name === "viewPreference") {
-                    const view = decodeURIComponent(value);
-                    if (view === "grid") {
-                        document.getElementById('task-list-content').classList.remove('list-view', 'hidden');
-                        document.getElementById('task-list-content').classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4');
-                        document.getElementById('calendar-view').classList.add('hidden');
-                    } else if (view === "calendar") {
-                        document.getElementById('task-list-content').classList.add('hidden');
-                        document.getElementById('calendar-view').classList.remove('hidden');
-                    } else {
-                        document.getElementById('task-list-content').classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4', 'hidden');
-                        document.getElementById('task-list-content').classList.add('list-view');
-                        document.getElementById('calendar-view').classList.add('hidden');
-                    }
-                }
+        function saveViewPreferenceToLocalStorage(view) {
+            try {
+                localStorage.setItem("viewPreference", view);
+            } catch (e) {
+                console.error("Error saving view preference to localStorage:", e);
             }
+        }
+
+        function loadViewPreferenceFromLocalStorage() {
+            try {
+                const view = localStorage.getItem("viewPreference");
+                if (view === "grid") {
+                    document.getElementById('task-list-content').classList.remove('list-view', 'hidden');
+                    document.getElementById('task-list-content').classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4');
+                    document.getElementById('calendar-view').classList.add('hidden');
+                } else if (view === "calendar") {
+                    document.getElementById('task-list-content').classList.add('hidden');
+                    document.getElementById('calendar-view').classList.remove('hidden');
+                } else {
+                    document.getElementById('task-list-content').classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4', 'hidden');
+                    document.getElementById('task-list-content').classList.add('list-view');
+                    document.getElementById('calendar-view').classList.add('hidden');
+                }
+            } catch (e) {
+                console.error("Error loading view preference from localStorage:", e);
+            }
+        }
+
+        function addAchievement(title, description) {
+            achievements.push({ title, description });
+            saveAchievementsToLocalStorage();
+            updateAchievementsList();
+        }
+
+        function updateAchievementsList() {
+            const achievementsList = document.getElementById('achievements-list');
+            achievementsList.innerHTML = '';
+
+            achievements.forEach(achievement => {
+                const achievementDiv = document.createElement('div');
+                achievementDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
+                achievementDiv.innerHTML = `
+                    <strong class="text-xl font-semibold text-gray-800">${achievement.title}</strong>
+                    <div class="text-sm text-gray-600">${achievement.description}</div>
+                `;
+                achievementsList.appendChild(achievementDiv);
+            });
         }
 
         document.getElementById('task-form').addEventListener('submit', function (e) {
@@ -496,12 +540,15 @@
             const urgency = parseInt(document.getElementById('urgency').value);
             const importance = parseInt(document.getElementById('importance').value);
             const effort = parseFloat(document.getElementById('effort').value);
+            const dueDate = document.getElementById('task-due-date').value;
+            const description = document.getElementById('task-description').value;
 
-            console.log("Form submitted with values:", { name, urgency, importance, effort });
+            console.log("Form submitted with values:", { name, urgency, importance, effort, dueDate, description });
 
-            tasks.push({ name, urgency, importance, effort });
+            tasks.push({ name, urgency, importance, effort, dueDate, description });
 
-            saveTasksToCookies();
+            saveTasksToLocalStorage();
+            allocateTimeSlots(tasks); // Automatically allocate time slots for tasks
             updateTaskList();
 
             document.getElementById('task-form').reset();
@@ -512,7 +559,7 @@
             document.getElementById('start-time').disabled = true;
             document.getElementById('end-time').disabled = true;
             document.getElementById('break-time').disabled = true;
-            saveTimeSlotsToCookies();
+            saveTimeSlotsToLocalStorage();
             allocateTimeSlots(tasks);
             updateTaskList();
         });
@@ -524,6 +571,7 @@
             document.getElementById('start-time').disabled = false;
             document.getElementById('end-time').disabled = false;
             document.getElementById('break-time').disabled = false;
+            saveTimeSlotsToLocalStorage();
             allocateTimeSlots(tasks);
             updateTaskList();
             alert("Time allocation has been reset. Current task allocations have been updated.");
@@ -541,9 +589,10 @@
 
         document.addEventListener('DOMContentLoaded', function () {
             console.log("Document loaded.");
-            loadTasksFromCookies();
-            loadTimeSlotsFromCookies();
-            loadViewPreferenceFromCookies();
+            loadTasksFromLocalStorage();
+            loadTimeSlotsFromLocalStorage();
+            loadViewPreferenceFromLocalStorage();
+            loadAchievementsFromLocalStorage();
             updateTaskList();
             updateCompletedTaskList();
 
@@ -558,27 +607,27 @@
             togglePriorityTaskButton.addEventListener('click', function () {
                 const isCollapsed = priorityChartContainer.classList.toggle('hidden');
                 togglePriorityTaskButton.innerHTML = isCollapsed ? '<i class="fa fa-chevron-down"></i>' : '<i class="fa fa-chevron-up"></i>';
-                savePriorityTaskStateToCookies(isCollapsed);
+                savePriorityTaskStateToLocalStorage(isCollapsed);
             });
 
             document.getElementById('grid-view-button').addEventListener('click', function () {
                 document.getElementById('task-list-content').classList.remove('list-view', 'hidden');
                 document.getElementById('task-list-content').classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4');
                 document.getElementById('calendar-view').classList.add('hidden');
-                saveViewPreferenceToCookies('grid');
+                saveViewPreferenceToLocalStorage('grid');
             });
 
             document.getElementById('list-view-button').addEventListener('click', function () {
                 document.getElementById('task-list-content').classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4', 'hidden');
                 document.getElementById('task-list-content').classList.add('list-view');
                 document.getElementById('calendar-view').classList.add('hidden');
-                saveViewPreferenceToCookies('list');
+                saveViewPreferenceToLocalStorage('list');
             });
 
             document.getElementById('calendar-view-button').addEventListener('click', function () {
                 document.getElementById('task-list-content').classList.add('hidden');
                 document.getElementById('calendar-view').classList.remove('hidden');
-                saveViewPreferenceToCookies('calendar');
+                saveViewPreferenceToLocalStorage('calendar');
                 renderCalendar();
             });
 
@@ -591,7 +640,7 @@
                 initialView: 'dayGridMonth',
                 events: tasks.map(task => ({
                     title: task.name,
-                    start: new Date(),
+                    start: task.dueDate,
                     allDay: true
                 }))
             });
