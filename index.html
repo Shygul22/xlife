@@ -228,6 +228,7 @@
         }
 
         function deleteTask(index, type) {
+            console.log(`Deleting task at index ${index} from ${type} tasks.`);
             if (type === 'pending') {
                 tasks.splice(index, 1);
                 saveTasksToLocalStorage();
@@ -240,25 +241,29 @@
         }
 
         function completeTask(index) {
+            console.log(`Completing task at index ${index}.`);
             const completedTask = tasks.splice(index, 1)[0];
             if (completedTask) {
                 completedTask.completedTime = new Date().toLocaleString();
                 completedTasks.push(completedTask);
 
-                saveTasksToLocalStorage();
-                saveCompletedTasksToLocalStorage();
+                saveTasksToLocalStorage();         // Save updated task list
+                saveCompletedTasksToLocalStorage(); // Save completed tasks
 
-                updateTaskList();
-                updateCompletedTaskList();
+                updateTaskList(); // Update the task list without reallocating time slots
+                updateCompletedTaskList(); // Refresh the completed task list
 
+                // Add achievement for completing a task
                 addAchievement("Task Completed", `You have completed the task: ${completedTask.name}`);
             }
         }
 
         function bulkDeleteTasks(type) {
+            console.log(`Performing bulk delete on ${type} tasks.`);
             let selectedTasks = [];
             if (type === 'pending') {
                 selectedTasks = Array.from(document.querySelectorAll('.task-checkbox:checked')).map(checkbox => parseInt(checkbox.dataset.index));
+                console.log("Selected tasks for deletion:", selectedTasks);
                 tasks = tasks.filter((task, index) => !selectedTasks.includes(index));
                 saveTasksToLocalStorage();
                 updateTaskList();
@@ -288,18 +293,13 @@
         }
 
         function updateTaskList(filteredTasks = tasks) {
+            console.log("Updating task list:", filteredTasks);
             filteredTasks.forEach(task => {
                 task.priorityScore = (0.5 * task.importance + 0.4 * task.urgency - 0.1 * task.effort) || 0;
             });
             filteredTasks.sort((a, b) => b.priorityScore - a.priorityScore);
 
             const taskListContent = document.getElementById('task-list-content');
-            taskListContent.innerHTML = '';
-
-            filteredTasks.forEach((task, index) => {
-                const taskDiv = document.createElement('div');
-                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
-                taskDiv.innerHTML = `
             taskListContent.innerHTML = '';
 
             filteredTasks.forEach((task, index) => {
