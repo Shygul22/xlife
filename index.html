@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
-    <head>
+</head>
 
 <body class="bg-gray-100 text-gray-900 font-sans">
     <div class="container mx-auto p-6">
@@ -120,26 +120,28 @@
                 <!-- Dashboard Section -->
                 <div id="dashboard-section" class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
                     <h2 class="text-3xl font-semibold text-gray-900 mb-4">Dashboard</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div id="dashboard-loading" class="hidden">
+                        <p class="text-center text-gray-600">Loading dashboard...</p>
+                    </div>
+                    <div id="dashboard-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div class="bg-blue-100 p-4 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold text-gray-800">Pending Tasks</h3>
-                            <canvas id="tasks-status-chart"></canvas>
+                            <h3 class="text-xl font-semibold text-gray-800">Task Status</h3>
+                            <div class="h-64">
+                                <canvas id="tasks-status-chart"></canvas>
+                            </div>
                         </div>
                         <div class="bg-green-100 p-4 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold text-gray-800">Average Priority Score</h3>
-                            <canvas id="average-priority-chart"></canvas>
+                            <h3 class="text-xl font-semibold text-gray-800">Priority Distribution</h3>
+                            <div class="h-64">
+                                <canvas id="priority-chart"></canvas>
+                            </div>
                         </div>
                         <div class="bg-yellow-100 p-4 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold text-gray-800">Effort Distribution</h3>
-                            <canvas id="effort-distribution-chart"></canvas>
+                            <h3 class="text-xl font-semibold text-gray-800">Effort Analysis</h3>
+                            <div class="h-64">
+                                <canvas id="effort-chart"></canvas>
+                            </div>
                         </div>
-                    </div>
-                    <div class="mt-8 p-6 bg-white shadow-lg rounded-lg transition-transform transform hover:scale-105">
-                        <h2 class="text-3xl font-semibold text-gray-900 mb-4">Achievements</h2>
-                        <div id="achievements-list" class="mt-4 space-y-4"></div>
-                        <button onclick="clearAchievements()" class="w-full bg-red-500 text-white p-3 rounded-lg shadow-md hover:bg-red-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 mt-4">
-                            Clear Achievements
-                        </button>
                     </div>
                 </div>
             </div>
@@ -149,213 +151,199 @@
     </div>
 
     <script>
+        // Initialize variables with proper error handling
         let tasks = [];
         let achievements = [];
-        let tasksStatusChart, averagePriorityChart, effortDistributionChart;
+        let tasksStatusChart = null;
+        let averagePriorityChart = null;
+        let effortDistributionChart = null;
 
-        function saveTasksToLocalStorage() {
+        // Improved error handling for localStorage
+        function safeLocalStorageOperation(operation, key, data = null) {
             try {
-                localStorage.setItem("tasks", JSON.stringify(tasks));
-            } catch (e) {
-                console.error("Error saving tasks to localStorage:", e);
-            }
-        }
-
-        function savePriorityTaskStateToLocalStorage(isCollapsed) {
-            try {
-                localStorage.setItem("priorityTaskCollapsed", isCollapsed);
-            } catch (e) {
-                console.error("Error saving priority task state to localStorage:", e);
-            }
-        }
-
-        function saveAchievementsToLocalStorage() {
-            try {
-                localStorage.setItem("achievements", JSON.stringify(achievements));
-            } catch (e) {
-                console.error("Error saving achievements to localStorage:", e);
-            }
-        }
-
-        function loadTasksFromLocalStorage() {
-            try {
-                tasks = JSON.parse(localStorage.getItem("tasks")) || [];
-                const isCollapsed = localStorage.getItem("priorityTaskCollapsed") === 'true';
-                const priorityChartContainer = document.getElementById('priority-chart-container');
-                const togglePriorityTaskButton = document.getElementById('toggle-priority-task');
-                if (isCollapsed) {
-                    priorityChartContainer.classList.add('hidden');
-                    togglePriorityTaskButton.innerHTML = '<i class="fa fa-chevron-down"></i>';
-                } else {
-                    priorityChartContainer.classList.remove('hidden');
-                    togglePriorityTaskButton.innerHTML = '<i class="fa fa-chevron-up"></i>';
+                if (operation === 'set') {
+                    localStorage.setItem(key, JSON.stringify(data));
+                    return true;
+                } else if (operation === 'get') {
+                    const item = localStorage.getItem(key);
+                    return item ? JSON.parse(item) : null;
                 }
             } catch (e) {
-                console.error("Error loading tasks from localStorage:", e);
+                console.error(`LocalStorage ${operation} error:`, e);
+                return operation === 'get' ? null : false;
             }
         }
 
-        function loadAchievementsFromLocalStorage() {
-            try {
-                achievements = JSON.parse(localStorage.getItem("achievements")) || [];
-                updateAchievementsList();
-            } catch (e) {
-                console.error("Error loading achievements from localStorage:", e);
-            }
+        // Improved task prioritization calculation
+        function calculatePriorityScore(task) {
+            if (!task.urgency || !task.importance || !task.effort) return 0;
+            
+            const urgencyWeight = 0.4;
+            const importanceWeight = 0.4;
+            const effortWeight = 0.2;
+            
+            // Normalize effort to 1-5 scale
+            const normalizedEffort = Math.min(5, Math.max(1, task.effort / 2));
+            
+            return (
+                (urgencyWeight * task.urgency) +
+                (importanceWeight * task.importance) -
+                (effortWeight * normalizedEffort)
+            ).toFixed(2);
         }
 
-        function deleteTask(index) {
-            tasks.splice(index, 1);
-            saveTasksToLocalStorage();
-            updateTaskList();
-            updateDashboard(); // Update dashboard after deleting a task
-        }
-
-        function completeTask(index) {
-            const completedTask = tasks[index];
-            if (completedTask) {
-                completedTask.completedTime = new Date().toLocaleString();
-                tasks.splice(index, 1); // Remove the task from the array
-                saveTasksToLocalStorage();
-                updateTaskList();
-                addAchievement("Task Completed", `You have completed the task: ${completedTask.name}`);
-                updateDashboard(); // Update dashboard after completing a task
-            }
-        }
-
-        function bulkDeleteTasks(type) {
-            let selectedTasks = [];
-            if (type === 'pending') {
-                selectedTasks = Array.from(document.querySelectorAll('.task-checkbox:checked')).map(checkbox => parseInt(checkbox.dataset.index));
-                tasks = tasks.filter((task, index) => !selectedTasks.includes(index));
-                saveTasksToLocalStorage();
-                updateTaskList();
-            }
-            updateDashboard(); // Update dashboard after bulk deleting tasks
-        }
-
-        function editTask(index) {
-            const task = tasks[index];
-            document.getElementById('task-name').value = task.name;
-            document.getElementById('urgency').value = task.urgency;
-            document.getElementById('importance').value = task.importance;
-            document.getElementById('effort').value = task.effort;
-            document.getElementById('task-due-date').value = task.dueDate;
-            document.getElementById('task-description').value = task.description;
-            deleteTask(index);
-        }
-
-        function clearAllTasks() {
-            if (confirm("Are you sure you want to clear all tasks?")) {
-                tasks = [];
-                saveTasksToLocalStorage();
-                updateTaskList();
-            }
-            updateDashboard(); // Update dashboard after clearing all tasks
-        }
-
-        function updateTaskList(filteredTasks = tasks) {
-            filteredTasks.forEach(task => {
-                task.priorityScore = (0.5 * task.importance + 0.4 * task.urgency - 0.1 * task.effort) || 0;
-            });
-            filteredTasks.sort((a, b) => b.priorityScore - a.priorityScore);
-
-            const taskListContent = document.getElementById('task-list-content');
-            taskListContent.innerHTML = '';
-
-            filteredTasks.forEach((task, index) => {
-                const taskDiv = document.createElement('div');
-                taskDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
-                taskDiv.innerHTML = `
-                    <div class="flex items-center space-x-4">
-                        <input type="checkbox" class="task-checkbox" data-index="${index}" />
-                        <strong class="text-xl ml-2 font-semibold text-gray-800">${task.name}</strong>
-                        <div class="text-sm text-gray-600">
-                            Urgency: ${task.urgency}, Importance: ${task.importance}, Effort: ${task.effort} hrs<br>
-                            Due Date: ${task.dueDate}<br>
-                            Description: ${task.description}<br>
-                            Priority Score: <span class="font-bold">${task.priorityScore.toFixed(2)}</span><br>
-                            Scheduled Time: ${task.scheduledTime || "Not scheduled"}
-                        </div>
-                    </div>
-                    <div class="flex space-x-2 mt-2">
-                        <button onclick="completeTask(${index})" class="flex-1 text-white bg-green-600 hover:bg-green-700 rounded-lg p-2">
-                            <i class="fa fa-check mr-2"></i> Complete
-                        </button>
-                        <button onclick="editTask(${index})" class="flex-1 text-white bg-yellow-500 hover:bg-yellow-600 rounded-lg p-2">
-                            <i class="fa fa-edit mr-2"></i> Edit
-                        </button>
-                        <button onclick="deleteTask(${index})" class="flex-1 text-white bg-red-600 hover:bg-red-700 rounded-lg p-2">
-                            <i class="fa fa-trash mr-2"></i> Delete
-                        </button>
-                    </div>
-                `;
-                taskListContent.appendChild(taskDiv);
-            });
-            updateDashboard(); // Ensure dashboard is updated after updating the task list
-        }
-
+        // Improved time slot allocation
         function allocateTimeSlots(tasks, startTimeDecimal = null) {
-            const startTime = document.getElementById('start-time').value; // Start time in HH:MM format
-            const endTime = document.getElementById('end-time').value; // End time in HH:MM format
-            const breakTime = parseInt(document.getElementById('break-time').value) / 60; // Break time in hours
+            if (!tasks.length) return;
 
-            let currentTime = startTimeDecimal !== null ? startTimeDecimal : convertTimeToDecimal(startTime);
+            const startTime = document.getElementById('start-time').value;
+            const endTime = document.getElementById('end-time').value;
+            const breakTime = Math.max(0, parseInt(document.getElementById('break-time').value) / 60);
+
+            let currentTime = startTimeDecimal || convertTimeToDecimal(startTime);
             const endDecimalTime = convertTimeToDecimal(endTime);
 
+            if (currentTime >= endDecimalTime) {
+                alert("Invalid time range: Start time must be before end time");
+                return;
+            }
+
             tasks.forEach(task => {
-                // Skip completed tasks
                 if (task.completedTime) return;
 
+                if (!task.effort || task.effort <= 0) {
+                    task.scheduledTime = "Invalid effort";
+                    return;
+                }
+
                 if (currentTime + task.effort + breakTime <= endDecimalTime) {
-                    // Allocate time for the task
                     task.scheduledTime = `${formatTime(currentTime)} - ${formatTime(currentTime + task.effort)}`;
-                    setTaskNotifications(task, currentTime, currentTime + task.effort);
+                    scheduleNotification(task, currentTime);
                     currentTime += task.effort + breakTime;
                 } else {
-                    // If the task cannot be scheduled due to lack of time
                     task.scheduledTime = "Exceeds available time";
                 }
             });
 
-            saveTasksToLocalStorage(); // Save updated task list with time allocations
+            safeLocalStorageOperation('set', 'tasks', tasks);
         }
 
-        function setTaskNotifications(task, startDecimalTime, endDecimalTime) {
-            const now = new Date();
-            const startTime = new Date(now.toDateString() + ' ' + formatTime24(startDecimalTime));
-            const endTime = new Date(now.toDateString() + ' ' + formatTime24(endDecimalTime));
-
-            if (startTime > now) {
-                const timeUntilStart = startTime - now;
-                setTimeout(() => {
-                    showNotification(`Reminder: The task "${task.name}" is scheduled to start now.`);
-                }, timeUntilStart);
+        // Improved notification system
+        function scheduleNotification(task, startTime) {
+            if (!("Notification" in window)) {
+                console.log("This browser does not support notifications");
+                return;
             }
 
-            if (endTime > now) {
-                const timeUntilEnd = endTime - now;
-                setTimeout(() => {
-                    showNotification(`Reminder: The task "${task.name}" is scheduled to end now.`);
-                }, timeUntilEnd);
-            }
-        }
-
-        function showNotification(message) {
             if (Notification.permission === "granted") {
-                new Notification(message);
+                scheduleTaskNotifications(task, startTime);
             } else if (Notification.permission !== "denied") {
                 Notification.requestPermission().then(permission => {
                     if (permission === "granted") {
-                        new Notification(message);
+                        scheduleTaskNotifications(task, startTime);
                     }
                 });
             }
         }
 
-        function convertTimeToDecimal(time) {
-            const [hours, minutes] = time.split(':').map(Number);
-            return hours + minutes / 60;
+        function scheduleTaskNotifications(task, startTime) {
+            const now = new Date();
+            const taskStart = new Date(now.toDateString() + ' ' + formatTime24(startTime));
+            
+            if (taskStart > now) {
+                setTimeout(() => {
+                    new Notification(`Task Starting: ${task.name}`, {
+                        body: `Time to start: ${task.name}`,
+                        icon: '/favicon.ico'
+                    });
+                }, taskStart - now);
+            }
+        }
+
+        // Improved dashboard update with error handling
+        function updateDashboard() {
+            try {
+                if (tasksStatusChart) tasksStatusChart.destroy();
+                if (averagePriorityChart) averagePriorityChart.destroy();
+                if (effortDistributionChart) effortDistributionChart.destroy();
+
+                const pendingTasks = tasks.filter(task => !task.completedTime).length;
+                const averagePriority = tasks.length ? 
+                    tasks.reduce((sum, task) => sum + parseFloat(calculatePriorityScore(task)), 0) / tasks.length : 0;
+
+                // Create new charts with error handling
+                createTasksStatusChart(pendingTasks);
+                createAveragePriorityChart(averagePriority);
+                createEffortDistributionChart();
+            } catch (e) {
+                console.error("Dashboard update error:", e);
+            }
+        }
+
+        function createTasksStatusChart(pendingTasks) {
+            const ctx = document.getElementById('tasks-status-chart').getContext('2d');
+            tasksStatusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pending'],
+                    datasets: [{
+                        data: [pendingTasks],
+                        backgroundColor: ['#4299E1']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function createAveragePriorityChart(averagePriority) {
+            const ctx = document.getElementById('average-priority-chart').getContext('2d');
+            averagePriorityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Average Priority'],
+                    datasets: [{
+                        data: [averagePriority],
+                        backgroundColor: ['#48BB78']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 5
+                        }
+                    }
+                }
+            });
+        }
+
+        function createEffortDistributionChart() {
+            const effortGroups = tasks.reduce((acc, task) => {
+                const effort = Math.ceil(task.effort);
+                acc[effort] = (acc[effort] || 0) + 1;
+                return acc;
+            }, {});
+
+            const ctx = document.getElementById('effort-distribution-chart').getContext('2d');
+            effortDistributionChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(effortGroups),
+                    datasets: [{
+                        data: Object.values(effortGroups),
+                        backgroundColor: ['#F6AD55', '#FC8181', '#90CDF4', '#9F7AEA', '#68D391']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
         }
 
         function formatTime(decimalTime) {
@@ -372,57 +360,69 @@
             return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
         }
 
-        function saveTimeSlotsToLocalStorage() {
+        function convertTimeToDecimal(time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            return hours + minutes / 60;
+        }
+
+        function updateTaskList(filteredTasks = tasks) {
             try {
-                const startTime = document.getElementById('start-time').value;
-                const endTime = document.getElementById('end-time').value;
-                const breakTime = document.getElementById('break-time').value;
-                localStorage.setItem("startTime", startTime);
-                localStorage.setItem("endTime", endTime);
-                localStorage.setItem("breakTime", breakTime);
+                const taskListContent = document.getElementById('task-list-content');
+                taskListContent.innerHTML = '';
+
+                filteredTasks.forEach(task => {
+                    const taskElement = document.createElement('div');
+                    taskElement.className = 'p-4 bg-gray-100 rounded-lg shadow-md mb-4';
+                    taskElement.innerHTML = `
+                        <h3 class="text-xl font-semibold">${task.name}</h3>
+                        <p>Priority Score: ${calculatePriorityScore(task)}</p>
+                        <p>Scheduled Time: ${task.scheduledTime || 'Not scheduled'}</p>
+                        <p>Due Date: ${task.dueDate || 'No due date'}</p>
+                        <p>Description: ${task.description || 'No description'}</p>
+                        <button onclick="completeTask('${task.id}')" class="bg-green-500 text-white p-2 rounded-lg shadow-md hover:bg-green-600 transition duration-200">Complete</button>
+                        <button onclick="deleteTask('${task.id}')" class="bg-red-500 text-white p-2 rounded-lg shadow-md hover:bg-red-600 transition duration-200 ml-2">Delete</button>
+                    `;
+                    taskListContent.appendChild(taskElement);
+                });
             } catch (e) {
-                console.error("Error saving time slots to localStorage:", e);
+                console.error("Task list update error:", e);
             }
         }
 
-        function loadTimeSlotsFromLocalStorage() {
-            try {
-                document.getElementById('start-time').value = localStorage.getItem("startTime") || "09:00";
-                document.getElementById('end-time').value = localStorage.getItem("endTime") || "17:00";
-                document.getElementById('break-time').value = localStorage.getItem("breakTime") || "60";
-            } catch (e) {
-                console.error("Error loading time slots from localStorage:", e);
+        function completeTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completedTime = new Date().toISOString();
+                safeLocalStorageOperation('set', 'tasks', tasks);
+                updateTaskList();
+                updateDashboard();
             }
         }
 
-        function saveViewPreferenceToLocalStorage(view) {
-            try {
-                localStorage.setItem("viewPreference", view);
-            } catch (e) {
-                console.error("Error saving view preference to localStorage:", e);
-            }
+        function deleteTask(taskId) {
+            tasks = tasks.filter(t => t.id !== taskId);
+            safeLocalStorageOperation('set', 'tasks', tasks);
+            updateTaskList();
+            updateDashboard();
         }
 
-        function loadViewPreferenceFromLocalStorage() {
-            try {
-                const view = localStorage.getItem("viewPreference");
-                document.getElementById('task-list-content').classList.add('list-view');
-            } catch (e) {
-                console.error("Error loading view preference from localStorage:", e);
-            }
+        function bulkDeleteTasks(status) {
+            tasks = tasks.filter(t => t.completedTime && status === 'completed' || !t.completedTime && status === 'pending');
+            safeLocalStorageOperation('set', 'tasks', tasks);
+            updateTaskList();
+            updateDashboard();
+        }
+
+        function clearAllTasks() {
+            tasks = [];
+            safeLocalStorageOperation('set', 'tasks', tasks);
+            updateTaskList();
+            updateDashboard();
         }
 
         function clearAchievements() {
-            if (confirm("Are you sure you want to clear all achievements?")) {
-                achievements = [];
-                saveAchievementsToLocalStorage();
-                updateAchievementsList();
-            }
-        }
-
-        function addAchievement(title, description) {
-            achievements.push({ title, description });
-            saveAchievementsToLocalStorage();
+            achievements = [];
+            safeLocalStorageOperation('set', 'achievements', achievements);
             updateAchievementsList();
         }
 
@@ -431,160 +431,1152 @@
             achievementsList.innerHTML = '';
 
             achievements.forEach(achievement => {
-                const achievementDiv = document.createElement('div');
-                achievementDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md', 'flex', 'flex-col', 'justify-between', 'transition-all', 'hover:shadow-xl', 'hover:border-blue-500', 'border', 'border-gray-200');
-                achievementDiv.innerHTML = `
-                    <strong class="text-xl font-semibold text-gray-800">${achievement.title}</strong>
-                    <div class="text-sm text-gray-600">${achievement.description}</div>
+                const achievementElement = document.createElement('div');
+                achievementElement.className = 'p-4 bg-gray-100 rounded-lg shadow-md mb-4';
+                achievementElement.innerHTML = `
+                    <h3 class="text-xl font-semibold">${achievement.name}</h3>
+                    <p>${achievement.description}</p>
                 `;
-                achievementsList.appendChild(achievementDiv);
+                achievementsList.appendChild(achievementElement);
             });
         }
 
-        document.getElementById('task-form').addEventListener('submit', function (e) {
+        // Add input validation to task form
+        document.getElementById('task-form').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const name = document.getElementById('task-name').value;
-            const urgency = parseInt(document.getElementById('urgency').value);
-            const importance = parseInt(document.getElementById('importance').value);
+            const taskName = document.getElementById('task-name').value.trim();
             const effort = parseFloat(document.getElementById('effort').value);
-            const dueDate = document.getElementById('task-due-date').value;
-            const description = document.getElementById('task-description').value;
 
-            console.log("Form submitted with values:", { name, urgency, importance, effort, dueDate, description });
+            if (!taskName) {
+                alert("Task name is required");
+                return;
+            }
 
-            tasks.push({ name, urgency, importance, effort, dueDate, description });
+            if (isNaN(effort) || effort <= 0) {
+                alert("Please enter a valid effort value");
+                return;
+            }
 
-            saveTasksToLocalStorage();
-            allocateTimeSlots(tasks); // Automatically allocate time slots for tasks
+            const task = {
+                id: Date.now().toString(),
+                name: taskName,
+                urgency: parseInt(document.getElementById('urgency').value),
+                importance: parseInt(document.getElementById('importance').value),
+                effort: effort,
+                dueDate: document.getElementById('task-due-date').value,
+                description: document.getElementById('task-description').value,
+                completedTime: null
+            };
+
+            tasks.push(task);
+            safeLocalStorageOperation('set', 'tasks', tasks);
             updateTaskList();
-            updateDashboard(); // Automatically update the dashboard when a task is added
-
-            document.getElementById('task-form').reset(); // Reset the form after submission
+            updateDashboard();
+            document.getElementById('task-form').reset();
         });
 
-        document.getElementById('time-slot-form').addEventListener('submit', function (e) {
-            e.preventDefault();
-            document.getElementById('start-time').disabled = true;
-            document.getElementById('end-time').disabled = true;
-            document.getElementById('break-time').disabled = true;
-            saveTimeSlotsToLocalStorage();
-            allocateTimeSlots(tasks);
-            updateTaskList();
-        });
-
-        document.getElementById('reset-time-slots-button').addEventListener('click', function () {
-            document.getElementById('start-time').value = "09:00";
-            document.getElementById('end-time').value = "17:00";
-            document.getElementById('break-time').value = "60";
-            document.getElementById('start-time').disabled = false;
-            document.getElementById('end-time').disabled = false;
-            document.getElementById('break-time').disabled = false;
-            saveTimeSlotsToLocalStorage();
-            allocateTimeSlots(tasks);
-            updateTaskList();
-            alert("Time allocation has been reset. Current task allocations have been updated.");
-        });
-
-        document.getElementById('start-time').addEventListener('change', function () {
-            allocateTimeSlots(tasks);
-            updateTaskList();
-        });
-
-        document.getElementById('end-time').addEventListener('change', function () {
-            allocateTimeSlots(tasks);
-            updateTaskList();
-        });
-
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log("Document loaded.");
-            loadTasksFromLocalStorage();
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            tasks = safeLocalStorageOperation('get', 'tasks') || [];
+            achievements = safeLocalStorageOperation('get', 'achievements') || [];
+            
             loadTimeSlotsFromLocalStorage();
-            loadViewPreferenceFromLocalStorage();
-            loadAchievementsFromLocalStorage();
             updateTaskList();
-
-            const clearAllButton = document.createElement('button');
-            clearAllButton.textContent = 'Clear All Tasks';
-            clearAllButton.classList.add('w-full', 'bg-red-500', 'text-white', 'p-3', 'rounded-lg', 'shadow-md', 'hover:bg-red-600', 'transition', 'duration-200', 'mt-6');
-            clearAllButton.onclick = clearAllTasks;
-            document.querySelector('.container').appendChild(clearAllButton);
-
-            const togglePriorityTaskButton = document.getElementById('toggle-priority-task');
-            const priorityChartContainer = document.getElementById('priority-chart-container');
-            togglePriorityTaskButton.addEventListener('click', function () {
-                const isCollapsed = priorityChartContainer.classList.toggle('hidden');
-                togglePriorityTaskButton.innerHTML = isCollapsed ? '<i class="fa fa-chevron-down"></i>' : '<i class="fa fa-chevron-up"></i>';
-                savePriorityTaskStateToLocalStorage(isCollapsed);
-            });
-
-            document.getElementById('task-list-content').classList.add('list-view');
+            updateDashboard();
+            
+            // Request notification permission on load
+            if ("Notification" in window) {
+                Notification.requestPermission();
+            }
         });
+
+        function loadTimeSlotsFromLocalStorage() {
+            try {
+                const startTime = safeLocalStorageOperation('get', 'startTime') || "09:00";
+                const endTime = safeLocalStorageOperation('get', 'endTime') || "17:00";
+                const breakTime = safeLocalStorageOperation('get', 'breakTime') || "0";
+
+                document.getElementById('start-time').value = startTime;
+                document.getElementById('end-time').value = endTime;
+                document.getElementById('break-time').value = breakTime;
+            } catch (e) {
+                console.error("Error loading time slots:", e);
+                showErrorMessage("Failed to load time slots");
+            }
+        }
+
+        function saveTimeSlotsToLocalStorage() {
+            const startTime = document.getElementById('start-time').value;
+            const endTime = document.getElementById('end-time').value;
+            const breakTime = document.getElementById('break-time').value;
+
+            safeLocalStorageOperation('set', 'startTime', startTime);
+            safeLocalStorageOperation('set', 'endTime', endTime);
+            safeLocalStorageOperation('set', 'breakTime', breakTime);
+        }
 
         function filterTasks() {
-            const searchInput = document.getElementById('task-search').value.toLowerCase();
-            const filteredTasks = tasks.filter(task => task.name.toLowerCase().includes(searchInput));
+            const searchTerm = document.getElementById('task-search').value.toLowerCase();
+            const filteredTasks = tasks.filter(task => 
+                task.name.toLowerCase().includes(searchTerm) ||
+                task.description.toLowerCase().includes(searchTerm)
+            );
             updateTaskList(filteredTasks);
         }
 
-        function updateDashboard() {
-            const completedTasks = tasks.filter(task => task.completedTime).length;
-            const pendingTasks = tasks.length - completedTasks;
-            const averagePriority = tasks.reduce((sum, task) => sum + task.priorityScore, 0) / tasks.length || 0;
-            const effortDistribution = tasks.reduce((acc, task) => {
-                acc[task.effort] = (acc[task.effort] || 0) + 1;
-                return acc;
-            }, {});
-
-            if (tasksStatusChart) tasksStatusChart.destroy();
-            if (averagePriorityChart) averagePriorityChart.destroy();
-            if (effortDistributionChart) effortDistributionChart.destroy();
-
-            const tasksStatusChartCtx = document.getElementById('tasks-status-chart').getContext('2d');
-            tasksStatusChart = new Chart(tasksStatusChartCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['', 'Pending'],
-                    datasets: [{
-                        data: [ pendingTasks],
-                        backgroundColor: [ '#FF9800']
-                    }]
+        function sortTasks(tasks) {
+            return tasks.sort((a, b) => {
+                // Sort by priority score
+                const priorityA = parseFloat(calculatePriorityScore(a));
+                const priorityB = parseFloat(calculatePriorityScore(b));
+                
+                if (priorityB !== priorityA) {
+                    return priorityB - priorityA;
                 }
+                
+                // If priority is equal, sort by due date
+                if (a.dueDate && b.dueDate) {
+                    return new Date(a.dueDate) - new Date(b.dueDate);
+                }
+                
+                return 0;
             });
+        }
 
-            const averagePriorityChartCtx = document.getElementById('average-priority-chart').getContext('2d');
-            averagePriorityChart = new Chart(averagePriorityChartCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Average Priority'],
-                    datasets: [{
-                        data: [averagePriority],
-                        backgroundColor: ['#2196F3']
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 5
+        function showErrorMessage(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 3000);
+        }
+
+        // Update task form submission
+        document.getElementById('task-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            try {
+                const formData = {
+                    id: Date.now().toString(),
+                    name: document.getElementById('task-name').value.trim(),
+                    urgency: parseInt(document.getElementById('urgency').value),
+                    importance: parseInt(document.getElementById('importance').value),
+                    effort: parseFloat(document.getElementById('effort').value),
+                    dueDate: document.getElementById('task-due-date').value,
+                    description: document.getElementById('task-description').value.trim(),
+                    completedTime: null
+                };
+
+                // Validation
+                if (!formData.name) throw new Error("Task name is required");
+                if (isNaN(formData.effort) || formData.effort <= 0) throw new Error("Invalid effort value");
+                if (!formData.urgency) throw new Error("Urgency is required");
+                if (!formData.importance) throw new Error("Importance is required");
+
+                tasks.push(formData);
+                safeLocalStorageOperation('set', 'tasks', tasks);
+                allocateTimeSlots(tasks);
+                updateTaskList();
+                updateDashboard();
+                this.reset();
+            } catch (error) {
+                showErrorMessage(error.message);
+            }
+        });
+
+        // Update time slot form submission
+        document.getElementById('time-slot-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            try {
+                saveTimeSlotsToLocalStorage();
+                allocateTimeSlots(tasks);
+                updateTaskList();
+                showErrorMessage("Time slots updated successfully!");
+            } catch (error) {
+                showErrorMessage("Failed to update time slots");
+            }
+        });
+
+        // Update initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                tasks = safeLocalStorageOperation('get', 'tasks') || [];
+                achievements = safeLocalStorageOperation('get', 'achievements') || [];
+                
+                loadTimeSlotsFromLocalStorage();
+                tasks = sortTasks(tasks);
+                updateTaskList();
+                updateDashboard();
+                
+                if ("Notification" in window) {
+                    Notification.requestPermission();
+                }
+            } catch (error) {
+                showErrorMessage("Failed to initialize application");
+                console.error("Initialization error:", error);
+            }
+        });
+    </script>
+    <script>
+    // Improved error handling wrapper
+    function tryCatch(fn, errorMessage = 'Operation failed') {
+        try {
+            return fn();
+        } catch (error) {
+            console.error(error);
+            showErrorMessage(errorMessage);
+            return null;
+        }
+    }
+
+    // Improved localStorage wrapper
+    const storage = {
+        get(key, defaultValue = null) {
+            try {
+                const item = localStorage.getItem(key);
+                return item ? JSON.parse(item) : defaultValue;
+            } catch {
+                return defaultValue;
+            }
+        },
+        set(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+                return true;
+            } catch {
+                return false;
+            }
+        }
+    };
+
+    // Fixed time slot allocation
+    function allocateTimeSlots(tasks, startTimeDecimal = null) {
+        if (!tasks?.length) return;
+
+        const startTime = document.getElementById('start-time')?.value || '09:00';
+        const endTime = document.getElementById('end-time')?.value || '17:00';
+        const breakTime = Math.max(0, parseInt(document.getElementById('break-time')?.value || '0') / 60);
+
+        let currentTime = startTimeDecimal || convertTimeToDecimal(startTime);
+        const endDecimalTime = convertTimeToDecimal(endTime);
+
+        if (currentTime >= endDecimalTime) {
+            showErrorMessage("Invalid time range: Start time must be before end time");
+            return;
+        }
+
+        const scheduledTasks = tasks.map(task => {
+            if (task.completedTime) return task;
+
+            if (!task.effort || task.effort <= 0) {
+                return { ...task, scheduledTime: "Invalid effort" };
+            }
+
+            if (currentTime + task.effort + breakTime <= endDecimalTime) {
+                const scheduledTime = `${formatTime(currentTime)} - ${formatTime(currentTime + task.effort)}`;
+                scheduleNotification(task, currentTime);
+                currentTime += task.effort + breakTime;
+                return { ...task, scheduledTime };
+            }
+
+            return { ...task, scheduledTime: "Exceeds available time" };
+        });
+
+        storage.set('tasks', scheduledTasks);
+        return scheduledTasks;
+    }
+
+    // Improved chart creation with cleanup
+    function createCharts() {
+        if (tasksStatusChart) tasksStatusChart.destroy();
+        if (averagePriorityChart) averagePriorityChart.destroy();
+        if (effortDistributionChart) effortDistributionChart.destroy();
+
+        const pendingTasks = tasks.filter(task => !task.completedTime);
+        const averagePriority = tasks.length ? 
+            tasks.reduce((sum, task) => sum + Number(calculatePriorityScore(task)), 0) / tasks.length : 0;
+
+        createTasksStatusChart(pendingTasks.length);
+        createAveragePriorityChart(averagePriority);
+        createEffortDistributionChart();
+    }
+
+    // Improved task form submission
+    document.getElementById('task-form')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const task = {
+            id: Date.now().toString(),
+            name: formData.get('task-name')?.trim(),
+            urgency: Number(formData.get('urgency')),
+            importance: Number(formData.get('importance')),
+            effort: Number(formData.get('effort')),
+            dueDate: formData.get('task-due-date'),
+            description: formData.get('task-description')?.trim(),
+            completedTime: null
+        };
+
+        if (!validateTask(task)) return;
+
+        tasks = [...tasks, task];
+        storage.set('tasks', tasks);
+        tasks = allocateTimeSlots(tasks) || tasks;
+        updateTaskList();
+        updateDashboard();
+        this.reset();
+    });
+
+    // New task validation function
+    function validateTask(task) {
+        const errors = [];
+        if (!task.name) errors.push("Task name is required");
+        if (isNaN(task.effort) || task.effort <= 0) errors.push("Invalid effort value");
+        if (!task.urgency) errors.push("Urgency is required");
+        if (!task.importance) errors.push("Importance is required");
+
+        if (errors.length) {
+            showErrorMessage(errors.join('. '));
+            return false;
+        }
+        return true;
+    }
+
+    // Improved initialization
+    function initializeApp() {
+        tasks = storage.get('tasks', []);
+        achievements = storage.get('achievements', []);
+        
+        loadTimeSlotsFromLocalStorage();
+        tasks = sortTasks(tasks);
+        allocateTimeSlots(tasks);
+        updateTaskList();
+        updateDashboard();
+        
+        if ("Notification" in window) {
+            Notification.requestPermission();
+        }
+    }
+
+    // Error message display
+    function showErrorMessage(message, duration = 3000) {
+        const existingError = document.querySelector('.error-message');
+        if (existingError) existingError.remove();
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50';
+        errorDiv.textContent = message;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), duration);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => tryCatch(initializeApp, 'Failed to initialize application'));
+</script>
+<script>
+const dashboard = {
+    charts: {
+        tasksStatus: null,
+        priority: null,
+        effort: null
+    },
+
+    init() {
+        this.showLoading(true);
+        try {
+            this.destroyCharts();
+            this.createCharts();
+            this.showLoading(false);
+        } catch (error) {
+            console.error('Dashboard initialization error:', error);
+            this.showError('Failed to initialize dashboard');
+        }
+    },
+
+    showLoading(show) {
+        document.getElementById('dashboard-loading').classList.toggle('hidden', !show);
+        document.getElementById('dashboard-content').classList.toggle('hidden', show);
+    },
+
+    showError(message) {
+        showErrorMessage(message);
+        this.showLoading(false);
+    },
+
+    destroyCharts() {
+        Object.values(this.charts).forEach(chart => {
+            if (chart) chart.destroy();
+        });
+    },
+
+    createCharts() {
+        this.createTaskStatusChart();
+        this.createPriorityChart();
+        this.createEffortChart();
+    },
+
+    createTaskStatusChart() {
+        const ctx = document.getElementById('tasks-status-chart').getContext('2d');
+        const pendingTasks = tasks.filter(t => !t.completedTime).length;
+        const completedTasks = tasks.filter(t => t.completedTime).length;
+
+        this.charts.tasksStatus = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'Completed'],
+                datasets: [{
+                    data: [pendingTasks, completedTasks],
+                    backgroundColor: ['#4299E1', '#48BB78']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    },
+
+    createPriorityChart() {
+        const ctx = document.getElementById('priority-chart').getContext('2d');
+        const priorityData = tasks.reduce((acc, task) => {
+            const priority = Math.round(calculatePriorityScore(task));
+            acc[priority] = (acc[priority] || 0) + 1;
+            return acc;
+        }, {});
+
+        this.charts.priority = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(priorityData),
+                datasets: [{
+                    label: 'Tasks by Priority',
+                    data: Object.values(priorityData),
+                    backgroundColor: '#9F7AEA'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
                         }
                     }
                 }
+            }
+        });
+    },
+
+    createEffortChart() {
+        const ctx = document.getElementById('effort-chart').getContext('2d');
+        const effortRanges = {
+            'Low (0-2h)': tasks.filter(t => t.effort <= 2).length,
+            'Medium (2-4h)': tasks.filter(t => t.effort > 2 && t.effort <= 4).length,
+            'High (4-8h)': tasks.filter(t => t.effort > 4 && t.effort <= 8).length,
+            'Very High (>8h)': tasks.filter(t => t.effort > 8).length
+        };
+
+        this.charts.effort = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(effortRanges),
+                datasets: [{
+                    data: Object.values(effortRanges),
+                    backgroundColor: ['#68D391', '#F6AD55', '#FC8181', '#F687B3']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12
+                        }
+                    }
+                }
+            }
+        });
+    }
+};
+
+// Update the existing updateDashboard function
+function updateDashboard() {
+    tryCatch(() => dashboard.init(), 'Failed to update dashboard');
+}
+
+// Update the existing DOMContentLoaded event listener to include dashboard initialization
+document.addEventListener('DOMContentLoaded', () => {
+    tryCatch(() => {
+        initializeApp();
+        dashboard.init();
+    }, 'Failed to initialize application');
+});
+</script>
+<script>
+// Add this new notification manager object before other scripts
+const notificationManager = {
+    init() {
+        if (!("Notification" in window)) {
+            console.log("This browser does not support notifications");
+            return false;
+        }
+        return Notification.requestPermission();
+    },
+
+    scheduleTaskNotification(task, startTime) {
+        if (Notification.permission !== "granted") return;
+
+        const now = new Date();
+        const taskStart = this.calculateTaskStartTime(startTime);
+        
+        // Schedule start notification
+        this.scheduleNotification(taskStart - 5 * 60000, {
+            title: `Task Starting Soon: ${task.name}`,
+            body: `Your task starts in 5 minutes at ${formatTime(startTime)}`,
+            icon: '/favicon.ico',
+            tag: `task-start-${task.id}`
+        });
+
+        // Schedule end notification
+        const taskEnd = new Date(taskStart.getTime() + task.effort * 3600000);
+        this.scheduleNotification(taskEnd, {
+            title: `Task Due: ${task.name}`,
+            body: `Time allocated for this task has ended`,
+            icon: '/favicon.ico',
+            tag: `task-end-${task.id}`
+        });
+
+        // Store notification info in localStorage
+        this.saveNotificationSchedule(task.id, {
+            startTime: taskStart.getTime(),
+            endTime: taskEnd.getTime()
+        });
+    },
+
+    calculateTaskStartTime(startTime) {
+        const now = new Date();
+        const [hours, minutes] = formatTime24(startTime).split(':').map(Number);
+        const taskStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+        
+        if (taskStart < now) {
+            taskStart.setDate(taskStart.getDate() + 1);
+        }
+        return taskStart;
+    },
+
+    scheduleNotification(time, options) {
+        const delay = time - Date.now();
+        if (delay <= 0) return;
+
+        setTimeout(() => {
+            new Notification(options.title, {
+                body: options.body,
+                icon: options.icon,
+                tag: options.tag
+            });
+        }, delay);
+    },
+
+    saveNotificationSchedule(taskId, schedule) {
+        const schedules = storage.get('notificationSchedules', {});
+        schedules[taskId] = schedule;
+        storage.set('notificationSchedules', schedules);
+    },
+
+    checkScheduledNotifications() {
+        const schedules = storage.get('notificationSchedules', {});
+        const now = Date.now();
+
+        Object.entries(schedules).forEach(([taskId, schedule]) => {
+            if (schedule.endTime < now) {
+                // Clean up expired notifications
+                delete schedules[taskId];
+            }
+        });
+
+        storage.set('notificationSchedules', schedules);
+    }
+};
+
+// Replace the existing scheduleNotification function with this updated version
+function scheduleNotification(task, startTime) {
+    notificationManager.scheduleTaskNotification(task, startTime);
+}
+
+// Update the existing allocateTimeSlots function to include the new notification logic
+const originalAllocateTimeSlots = allocateTimeSlots;
+function allocateTimeSlots(tasks, startTimeDecimal = null) {
+    const scheduledTasks = originalAllocateTimeSlots(tasks, startTimeDecimal);
+    
+    if (scheduledTasks) {
+        scheduledTasks.forEach(task => {
+            if (!task.completedTime && task.scheduledTime && task.scheduledTime !== "Invalid effort" && task.scheduledTime !== "Exceeds available time") {
+                const startTime = task.scheduledTime.split(' - ')[0];
+                scheduleNotification(task, convertTimeToDecimal(startTime));
+            }
+        });
+    }
+    
+    return scheduledTasks;
+}
+
+// Add this to your DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', function() {
+    // ...existing initialization code...
+    
+    // Initialize notifications
+    notificationManager.init().then(() => {
+        notificationManager.checkScheduledNotifications();
+    });
+});
+</script>
+<script>
+// Error handling utilities
+const ErrorHandler = {
+    handle(error, context = '') {
+        console.error(`${context}:`, error);
+        this.showError(error.message || 'An error occurred');
+    },
+
+    showError(message) {
+        const existingError = document.querySelector('.error-message');
+        if (existingError) existingError.remove();
+
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message fixed top-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50';
+        errorDiv.textContent = message;
+        document.body.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 3000);
+    },
+
+    validateTask(task) {
+        if (!task.name?.trim()) throw new Error('Task name is required');
+        if (!task.urgency) throw new Error('Urgency is required');
+        if (!task.importance) throw new Error('Importance is required');
+        if (!task.effort || task.effort <= 0) throw new Error('Valid effort is required');
+        return true;
+    }
+};
+
+// Safer data management
+const DataManager = {
+    save(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+            return true;
+        } catch (error) {
+            ErrorHandler.handle(error, 'Save operation failed');
+            return false;
+        }
+    },
+
+    load(key, defaultValue = null) {
+        try {
+            const data = localStorage.getItem(key);
+            return data ? JSON.parse(data) : defaultValue;
+        } catch (error) {
+            ErrorHandler.handle(error, 'Load operation failed');
+            return defaultValue;
+        }
+    }
+};
+
+// Notification manager with error handling
+const NotificationManager = {
+    init() {
+        if (!("Notification" in window)) {
+            ErrorHandler.showError("This browser does not support notifications");
+            return Promise.resolve(false);
+        }
+        return Notification.requestPermission();
+    },
+
+    scheduleNotification(task, options) {
+        try {
+            if (Notification.permission !== "granted") return;
+            
+            const notification = new Notification(options.title, {
+                body: options.body,
+                icon: options.icon || '/favicon.ico',
+                tag: options.tag
             });
 
-            const effortDistributionChartCtx = document.getElementById('effort-distribution-chart').getContext('2d');
-            effortDistributionChart = new Chart(effortDistributionChartCtx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(effortDistribution),
-                    datasets: [{
-                        data: Object.values(effortDistribution),
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40']
-                    }]
+            notification.onclick = () => {
+                window.focus();
+                notification.close();
+            };
+        } catch (error) {
+            ErrorHandler.handle(error, 'Notification scheduling failed');
+        }
+    }
+};
+
+// Fixed time conversion utilities
+const TimeUtil = {
+    toDecimal(timeString) {
+        try {
+            const [hours, minutes] = timeString.split(':').map(Number);
+            if (isNaN(hours) || isNaN(minutes)) throw new Error('Invalid time format');
+            return hours + minutes / 60;
+        } catch (error) {
+            ErrorHandler.handle(error, 'Time conversion failed');
+            return 0;
+        }
+    },
+
+    format24Hour(decimalTime) {
+        try {
+            const hours = Math.floor(decimalTime);
+            const minutes = Math.round((decimalTime - hours) * 60);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        } catch (error) {
+            ErrorHandler.handle(error, 'Time formatting failed');
+            return '00:00';
+        }
+    }
+};
+
+// Task management with improved error handling
+function addTask(taskData) {
+    try {
+        ErrorHandler.validateTask(taskData);
+        const task = {
+            ...taskData,
+            id: Date.now().toString(),
+            completedTime: null
+        };
+        tasks.push(task);
+        DataManager.save('tasks', tasks);
+        return true;
+    } catch (error) {
+        ErrorHandler.handle(error, 'Task addition failed');
+        return false;
+    }
+}
+
+// Update your event listeners to use the new utilities
+document.getElementById('task-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    try {
+        const formData = new FormData(this);
+        const taskData = {
+            name: formData.get('task-name')?.trim(),
+            urgency: Number(formData.get('urgency')),
+            importance: Number(formData.get('importance')),
+            effort: Number(formData.get('effort')),
+            dueDate: formData.get('task-due-date'),
+            description: formData.get('task-description')?.trim()
+        };
+
+        if (addTask(taskData)) {
+            this.reset();
+            updateTaskList();
+            updateDashboard();
+        }
+    } catch (error) {
+        ErrorHandler.handle(error, 'Form submission failed');
+    }
+});
+
+// Initialize application with error handling
+function initializeApp() {
+    try {
+        tasks = DataManager.load('tasks', []);
+        NotificationManager.init()
+            .then(() => {
+                updateTaskList();
+                updateDashboard();
+            })
+            .catch(error => ErrorHandler.handle(error, 'Notification initialization failed'));
+    } catch (error) {
+        ErrorHandler.handle(error, 'Application initialization failed');
+    }
+}
+
+// Update your DOMContentLoaded event listener
+document.addEventListener('DOMContentLoaded', initializeApp);
+</script>
+<script>
+// Add this new TimeSlotManager before other scripts
+const TimeSlotManager = {
+    validate(startTime, endTime, breakTime) {
+        const start = this.parseTime(startTime);
+        const end = this.parseTime(endTime);
+        
+        if (!start || !end) throw new Error('Invalid time format');
+        if (start >= end) throw new Error('Start time must be before end time');
+        if (breakTime < 0) throw new Error('Break time cannot be negative');
+        
+        return { start, end, breakTime };
+    },
+
+    parseTime(timeString) {
+        const [hours, minutes] = timeString.split(':').map(Number);
+        return hours + minutes / 60;
+    },
+
+    formatTime(decimalTime) {
+        const hours = Math.floor(decimalTime);
+        const minutes = Math.round((decimalTime - hours) * 60);
+        const period = hours >= 12 ? 'PM' : 'AM';
+        const formattedHour = hours % 12 || 12;
+        return `${formattedHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+    },
+
+    calculateAvailableTime(start, end, breakTime) {
+        return end - start - (breakTime / 60);
+    },
+
+    allocateTimeSlots(tasks, settings) {
+        try {
+            const { start, end, breakTime } = this.validate(
+                settings.startTime,
+                settings.endTime,
+                settings.breakTime
+            );
+
+            let currentTime = start;
+            const availableTime = this.calculateAvailableTime(start, end, breakTime);
+            const scheduledTasks = [];
+            const unscheduledTasks = [];
+
+            // Sort tasks by priority
+            const sortedTasks = [...tasks].sort((a, b) => {
+                if (a.completedTime) return 1;
+                if (b.completedTime) return -1;
+                return calculatePriorityScore(b) - calculatePriorityScore(a);
+            });
+
+            sortedTasks.forEach(task => {
+                if (task.completedTime) {
+                    scheduledTasks.push(task);
+                    return;
+                }
+
+                if (!task.effort || task.effort <= 0) {
+                    unscheduledTasks.push({
+                        ...task,
+                        scheduledTime: "Invalid effort"
+                    });
+                    return;
+                }
+
+                const taskEndTime = currentTime + task.effort;
+                if (taskEndTime <= end) {
+                    const scheduledTask = {
+                        ...task,
+                        scheduledTime: `${this.formatTime(currentTime)} - ${this.formatTime(taskEndTime)}`,
+                        startTime: currentTime,
+                        endTime: taskEndTime
+                    };
+                    scheduledTasks.push(scheduledTask);
+                    currentTime = taskEndTime + (breakTime / 60);
+
+                    // Schedule notification
+                    notificationManager.scheduleTaskNotification(scheduledTask, currentTime);
+                } else {
+                    unscheduledTasks.push({
+                        ...task,
+                        scheduledTime: "Exceeds available time"
+                    });
                 }
             });
+
+            return {
+                scheduled: scheduledTasks,
+                unscheduled: unscheduledTasks,
+                availableTime,
+                remainingTime: end - currentTime
+            };
+        } catch (error) {
+            ErrorHandler.handle(error, 'Time slot allocation failed');
+            return null;
         }
-    </script>
+    }
+};
+
+// Update the existing allocateTimeSlots function
+function allocateTimeSlots(tasks) {
+    const settings = {
+        startTime: document.getElementById('start-time').value,
+        endTime: document.getElementById('end-time').value,
+        breakTime: parseInt(document.getElementById('break-time').value)
+    };
+
+    const result = TimeSlotManager.allocateTimeSlots(tasks, settings);
+    if (!result) return;
+
+    // Update tasks with new scheduling
+    tasks = [...result.scheduled, ...result.unscheduled];
+    DataManager.save('tasks', tasks);
+
+    // Show allocation summary
+    showAllocationSummary(result);
+    return tasks;
+}
+
+// Add new function to show allocation summary
+function showAllocationSummary(result) {
+    const message = `
+        Tasks scheduled: ${result.scheduled.length}
+        Tasks unscheduled: ${result.unscheduled.length}
+        Available time: ${result.availableTime.toFixed(2)} hours
+        Remaining time: ${result.remainingTime.toFixed(2)} hours
+    `;
+    
+    const summaryDiv = document.createElement('div');
+    summaryDiv.className = 'fixed bottom-4 right-4 bg-blue-500 text-white p-4 rounded-lg shadow-lg z-50';
+    summaryDiv.style.maxWidth = '300px';
+    summaryDiv.innerHTML = message.split('\n').join('<br>');
+    
+    document.body.appendChild(summaryDiv);
+    setTimeout(() => summaryDiv.remove(), 5000);
+}
+
+// Update time slot form submission
+document.getElementById('time-slot-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    try {
+        saveTimeSlotsToLocalStorage();
+        const updatedTasks = allocateTimeSlots(tasks);
+        if (updatedTasks) {
+            tasks = updatedTasks;
+            updateTaskList();
+            updateDashboard();
+        }
+    } catch (error) {
+        ErrorHandler.handle(error, 'Failed to update time slots');
+    }
+});
+
+// Add reset functionality
+document.getElementById('reset-time-slots-button').addEventListener('click', function() {
+    try {
+        document.getElementById('start-time').value = '09:00';
+        document.getElementById('end-time').value = '17:00';
+        document.getElementById('break-time').value = '0';
+        saveTimeSlotsToLocalStorage();
+        const updatedTasks = allocateTimeSlots(tasks);
+        if (updatedTasks) {
+            tasks = updatedTasks;
+            updateTaskList();
+            updateDashboard();
+        }
+        showErrorMessage('Time slots reset successfully');
+    } catch (error) {
+        ErrorHandler.handle(error, 'Failed to reset time slots');
+    }
+});
+</script>
+<script>
+// Replace existing notification manager with this improved version
+const NotificationSystem = {
+    init() {
+        return new Promise((resolve) => {
+            if (!("Notification" in window)) {
+                ErrorHandler.showError("Browser doesn't support notifications");
+                resolve(false);
+                return;
+            }
+
+            if (Notification.permission === "granted") {
+                resolve(true);
+                return;
+            }
+
+            Notification.requestPermission()
+                .then(permission => {
+                    resolve(permission === "granted");
+                })
+                .catch(error => {
+                    ErrorHandler.handle(error, 'Notification permission request failed');
+                    resolve(false);
+                });
+        });
+    },
+
+    scheduleTaskNotification(task) {
+        if (Notification.permission !== "granted") return;
+
+        try {
+            const startTime = this.parseScheduledTime(task.scheduledTime);
+            if (!startTime) return;
+
+            // Schedule 5-minute warning
+            const warningTime = new Date(startTime.getTime() - 5 * 60000);
+            if (warningTime > new Date()) {
+                this.createScheduledNotification(warningTime, {
+                    title: `⏰ Task Starting Soon: ${task.name}`,
+                    body: `Your task "${task.name}" starts in 5 minutes\nScheduled: ${task.scheduledTime}`,
+                    tag: `warning-${task.id}`,
+                    requireInteraction: true
+                });
+            }
+
+            // Schedule start notification
+            if (startTime > new Date()) {
+                this.createScheduledNotification(startTime, {
+                    title: `🎯 Task Start: ${task.name}`,
+                    body: `Time to start: "${task.name}"\nDuration: ${task.effort} hours`,
+                    tag: `start-${task.id}`,
+                    requireInteraction: true
+                });
+            }
+
+            // Save notification schedule
+            this.saveNotificationSchedule(task.id, {
+                warningTime: warningTime.getTime(),
+                startTime: startTime.getTime(),
+                taskName: task.name
+            });
+
+        } catch (error) {
+            ErrorHandler.handle(error, 'Failed to schedule notification');
+        }
+    },
+
+    parseScheduledTime(scheduledTime) {
+        if (!scheduledTime || scheduledTime === "Invalid effort" || scheduledTime === "Exceeds available time") {
+            return null;
+        }
+
+        try {
+            const [timeStr] = scheduledTime.split(' - ');
+            const [time, period] = timeStr.split(' ');
+            const [hours, minutes] = time.split(':').map(Number);
+            
+            const now = new Date();
+            const scheduledDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            let adjustedHours = hours;
+            if (period === 'PM' && hours !== 12) adjustedHours += 12;
+            if (period === 'AM' && hours === 12) adjustedHours = 0;
+            
+            scheduledDate.setHours(adjustedHours, minutes, 0, 0);
+
+            // If the time has passed for today, schedule for tomorrow
+            if (scheduledDate < now) {
+                scheduledDate.setDate(scheduledDate.getDate() + 1);
+            }
+
+            return scheduledDate;
+        } catch (error) {
+            ErrorHandler.handle(error, 'Failed to parse scheduled time');
+            return null;
+        }
+    },
+
+    createScheduledNotification(scheduledTime, options) {
+        const delay = scheduledTime.getTime() - Date.now();
+        if (delay <= 0) return;
+
+        const timeoutId = setTimeout(() => {
+            try {
+                const notification = new Notification(options.title, {
+                    body: options.body,
+                    icon: '/favicon.ico',
+                    tag: options.tag,
+                    requireInteraction: options.requireInteraction || false
+                });
+
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+            } catch (error) {
+                ErrorHandler.handle(error, 'Failed to create notification');
+            }
+        }, delay);
+
+        // Store timeout ID for cleanup
+        this.storeTimeout(options.tag, timeoutId);
+    },
+
+    storeTimeout(tag, timeoutId) {
+        const timeouts = JSON.parse(localStorage.getItem('notificationTimeouts') || '{}');
+        timeouts[tag] = timeoutId;
+        localStorage.setItem('notificationTimeouts', JSON.stringify(timeouts));
+    },
+
+    clearExistingNotifications() {
+        try {
+            // Clear any existing timeouts
+            const timeouts = JSON.parse(localStorage.getItem('notificationTimeouts') || '{}');
+            Object.values(timeouts).forEach(timeoutId => clearTimeout(timeoutId));
+            localStorage.removeItem('notificationTimeouts');
+
+            // Clear any existing notifications
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then(registration => {
+                    registration.getNotifications().then(notifications => {
+                        notifications.forEach(notification => notification.close());
+                    });
+                });
+            }
+        } catch (error) {
+            ErrorHandler.handle(error, 'Failed to clear notifications');
+        }
+    },
+
+    saveNotificationSchedule(taskId, schedule) {
+        try {
+            const schedules = JSON.parse(localStorage.getItem('notificationSchedules') || '{}');
+            schedules[taskId] = schedule;
+            localStorage.setItem('notificationSchedules', JSON.stringify(schedules));
+        } catch (error) {
+            ErrorHandler.handle(error, 'Failed to save notification schedule');
+        }
+    }
+};
+
+// Update the time slot allocation to use the new notification system
+function allocateTimeSlots(tasks) {
+    const settings = {
+        startTime: document.getElementById('start-time').value,
+        endTime: document.getElementById('end-time').value,
+        breakTime: parseInt(document.getElementById('break-time').value)
+    };
+
+    const result = TimeSlotManager.allocateTimeSlots(tasks, settings);
+    if (!result) return;
+
+    // Clear existing notifications before scheduling new ones
+    NotificationSystem.clearExistingNotifications();
+
+    // Schedule notifications for all tasks
+    result.scheduled.forEach(task => {
+        if (!task.completedTime) {
+            NotificationSystem.scheduleTaskNotification(task);
+        }
+    });
+
+    // Update tasks with new scheduling
+    tasks = [...result.scheduled, ...result.unscheduled];
+    DataManager.save('tasks', tasks);
+
+    showAllocationSummary(result);
+    return tasks;
+}
+
+// Update initialization to include notification system
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        await NotificationSystem.init();
+        NotificationSystem.clearExistingNotifications();
+        initializeApp();
+    } catch (error) {
+        ErrorHandler.handle(error, 'Failed to initialize notification system');
+    }
+});
+</script>
 </body>
 
 </html>
