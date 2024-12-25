@@ -10,13 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
-    <style>
-        .dark-mode {
-            background-color: #1a202c;
-            color: #cbd5e0;
-        }
-    </style>
-</head>
+    <head>
 
 <body class="bg-gray-100 text-gray-900 font-sans">
     <div class="container mx-auto p-6">
@@ -151,6 +145,7 @@
             </div>
         </div>
         <!-- Removed Completed Tasks Section -->
+         
     </div>
 
     <script>
@@ -315,6 +310,7 @@
                 if (currentTime + task.effort + breakTime <= endDecimalTime) {
                     // Allocate time for the task
                     task.scheduledTime = `${formatTime(currentTime)} - ${formatTime(currentTime + task.effort)}`;
+                    setTaskNotifications(task, currentTime, currentTime + task.effort);
                     currentTime += task.effort + breakTime;
                 } else {
                     // If the task cannot be scheduled due to lack of time
@@ -323,6 +319,38 @@
             });
 
             saveTasksToLocalStorage(); // Save updated task list with time allocations
+        }
+
+        function setTaskNotifications(task, startDecimalTime, endDecimalTime) {
+            const now = new Date();
+            const startTime = new Date(now.toDateString() + ' ' + formatTime24(startDecimalTime));
+            const endTime = new Date(now.toDateString() + ' ' + formatTime24(endDecimalTime));
+
+            if (startTime > now) {
+                const timeUntilStart = startTime - now;
+                setTimeout(() => {
+                    showNotification(`Reminder: The task "${task.name}" is scheduled to start now.`);
+                }, timeUntilStart);
+            }
+
+            if (endTime > now) {
+                const timeUntilEnd = endTime - now;
+                setTimeout(() => {
+                    showNotification(`Reminder: The task "${task.name}" is scheduled to end now.`);
+                }, timeUntilEnd);
+            }
+        }
+
+        function showNotification(message) {
+            if (Notification.permission === "granted") {
+                new Notification(message);
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        new Notification(message);
+                    }
+                });
+            }
         }
 
         function convertTimeToDecimal(time) {
@@ -336,6 +364,12 @@
             const period = hours >= 12 ? 'PM' : 'AM';
             const formattedHour = hours % 12 || 12;
             return `${formattedHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+        }
+
+        function formatTime24(decimalTime) {
+            const hours = Math.floor(decimalTime);
+            const minutes = Math.round((decimalTime - hours) * 60);
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
         }
 
         function saveTimeSlotsToLocalStorage() {
