@@ -111,23 +111,9 @@
                     <div class="flex flex-col sm:flex-row justify-between mb-4 space-y-4 sm:space-y-0">
                         <input type="text" id="task-search" placeholder="Search tasks..." onkeyup="filterTasks()"
                             class="p-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <div class="flex space-x-2">
-                            <button id="grid-view-button" class="p-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                Grid View
-                            </button>
-                            <button id="list-view-button" class="p-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                List View
-                            </button>
-                            <button id="calendar-view-button" class="p-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                Calendar View
-                            </button>
-                        </div>
                     </div>
                     <div id="task-list-content" class="mt-4 list-view">
                         <!-- Tasks will be injected here -->
-                    </div>
-                    <div id="calendar-view" class="hidden mt-4">
-                        <div id="calendar"></div>
                     </div>
                     <button onclick="bulkDeleteTasks('pending')" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-lg">
                         <i class="fa fa-trash mr-2"></i> Bulk Delete Selected Tasks
@@ -142,7 +128,7 @@
                     <h2 class="text-3xl font-semibold text-gray-900 mb-4">Dashboard</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <div class="bg-blue-100 p-4 rounded-lg shadow-md">
-                            <h3 class="text-xl font-semibold text-gray-800">Tasks Completed vs. Pending</h3>
+                            <h3 class="text-xl font-semibold text-gray-800">Pending Tasks</h3>
                             <canvas id="tasks-status-chart"></canvas>
                         </div>
                         <div class="bg-green-100 p-4 rounded-lg shadow-md">
@@ -386,18 +372,7 @@
         function loadViewPreferenceFromLocalStorage() {
             try {
                 const view = localStorage.getItem("viewPreference");
-                if (view === "grid") {
-                    document.getElementById('task-list-content').classList.remove('list-view', 'hidden');
-                    document.getElementById('task-list-content').classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4');
-                    document.getElementById('calendar-view').classList.add('hidden');
-                } else if (view === "calendar") {
-                    document.getElementById('task-list-content').classList.add('hidden');
-                    document.getElementById('calendar-view').classList.remove('hidden');
-                } else {
-                    document.getElementById('task-list-content').classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4', 'hidden');
-                    document.getElementById('task-list-content').classList.add('list-view');
-                    document.getElementById('calendar-view').classList.add('hidden');
-                }
+                document.getElementById('task-list-content').classList.add('list-view');
             } catch (e) {
                 console.error("Error loading view preference from localStorage:", e);
             }
@@ -509,42 +484,8 @@
                 savePriorityTaskStateToLocalStorage(isCollapsed);
             });
 
-            document.getElementById('grid-view-button').addEventListener('click', function () {
-                document.getElementById('task-list-content').classList.remove('list-view', 'hidden');
-                document.getElementById('task-list-content').classList.add('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4');
-                document.getElementById('calendar-view').classList.add('hidden');
-                saveViewPreferenceToLocalStorage('grid');
-            });
-
-            document.getElementById('list-view-button').addEventListener('click', function () {
-                document.getElementById('task-list-content').classList.remove('grid', 'grid-cols-1', 'sm:grid-cols-2', 'lg:grid-cols-3', 'gap-4', 'hidden');
-                document.getElementById('task-list-content').classList.add('list-view');
-                document.getElementById('calendar-view').classList.add('hidden');
-                saveViewPreferenceToLocalStorage('list');
-            });
-
-            document.getElementById('calendar-view-button').addEventListener('click', function () {
-                document.getElementById('task-list-content').classList.add('hidden');
-                document.getElementById('calendar-view').classList.remove('hidden');
-                saveViewPreferenceToLocalStorage('calendar');
-                renderCalendar();
-            });
-
             document.getElementById('task-list-content').classList.add('list-view');
         });
-
-        function renderCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            const calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                events: tasks.map(task => ({
-                    title: task.name,
-                    start: task.dueDate,
-                    allDay: true
-                }))
-            });
-            calendar.render();
-        }
 
         function filterTasks() {
             const searchInput = document.getElementById('task-search').value.toLowerCase();
