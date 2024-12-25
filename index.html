@@ -123,9 +123,6 @@
                     <div id="task-list-content" class="mt-4 list-view">
                         <!-- Tasks will be injected here -->
                     </div>
-                    <button onclick="bulkDeleteTasks('pending')" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-lg">
-                        <i class="fa fa-trash mr-2"></i> Bulk Delete Selected Tasks
-                    </button>
                     <button onclick="clearAllTasks()" class="w-full sm:w-auto bg-red-600 text-white py-3 px-4 rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-600 transition duration-300 mt-6 text-lg">
                         <i class="fa fa-trash mr-2"></i> Clear All Tasks
                     </button>
@@ -515,13 +512,6 @@
 
         function deleteTask(taskId) {
             tasks = tasks.filter(t => t.id !== taskId);
-            safeLocalStorageOperation('set', 'tasks', tasks);
-            updateTaskList();
-            updateDashboard();
-        }
-
-        function bulkDeleteTasks(status) {
-            tasks = tasks.filter(t => t.completedTime && status === 'completed' || !t.completedTime && status === 'pending');
             safeLocalStorageOperation('set', 'tasks', tasks);
             updateTaskList();
             updateDashboard();
