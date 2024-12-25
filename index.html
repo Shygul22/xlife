@@ -94,6 +94,20 @@
                             Reset Time Slots
                         </button>
                     </form>
+                    <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                        <h3 class="text-lg font-medium mb-2">Auto Schedule</h3>
+                        <div class="flex space-x-2">
+                            <button id="auto-schedule-button" 
+                                class="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors">
+                                <i class="fa fa-magic mr-2"></i>Auto Schedule Tasks
+                            </button>
+                            <select id="schedule-strategy" class="border rounded-lg px-3 py-2">
+                                <option value="priority">By Priority</option>
+                                <option value="deadline">By Deadline</option>
+                                <option value="effort">By Effort</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -372,21 +386,121 @@
 
                 filteredTasks.forEach(task => {
                     const taskElement = document.createElement('div');
-                    taskElement.className = 'p-4 bg-gray-100 rounded-lg shadow-md mb-4';
+                    taskElement.className = `p-4 bg-gray-100 rounded-lg shadow-md mb-4 ${
+                        task.completedTime ? 'opacity-50' : ''
+                    }`;
+                    
+                    const priorityScore = calculatePriorityScore(task);
+                    const priorityClass = priorityScore >= 4 ? 'text-red-600' : 
+                                        priorityScore >= 3 ? 'text-orange-500' : 
+                                        'text-green-600';
+
                     taskElement.innerHTML = `
-                        <h3 class="text-xl font-semibold">${task.name}</h3>
-                        <p>Priority Score: ${calculatePriorityScore(task)}</p>
-                        <p>Scheduled Time: ${task.scheduledTime || 'Not scheduled'}</p>
-                        <p>Due Date: ${task.dueDate || 'No due date'}</p>
-                        <p>Description: ${task.description || 'No description'}</p>
-                        <button onclick="completeTask('${task.id}')" class="bg-green-500 text-white p-2 rounded-lg shadow-md hover:bg-green-600 transition duration-200">Complete</button>
-                        <button onclick="deleteTask('${task.id}')" class="bg-red-500 text-white p-2 rounded-lg shadow-md hover:bg-red-600 transition duration-200 ml-2">Delete</button>
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-semibold">${task.name}</h3>
+                                <p class="${priorityClass}">Priority Score: ${priorityScore}</p>
+                                <p>Scheduled Time: ${task.scheduledTime || 'Not scheduled'}</p>
+                                <p>Due Date: ${task.dueDate || 'No due date'}</p>
+                                <p class="text-gray-600">${task.description || 'No description'}</p>
+                            </div>
+                            <div class="flex flex-col space-y-2 ml-4">
+                                ${!task.completedTime ? `
+                                    <button onclick="completeTask('${task.id}')"
+                                        class="bg-green-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-600 transition duration-200 flex items-center">
+                                        <i class="fa fa-check mr-2"></i>Complete
+                                    </button>
+                                ` : `
+                                    <span class="text-green-600 font-medium">
+                                        <i class="fa fa-check-circle mr-1"></i>Completed
+                                    </span>
+                                `}
+                                <button onclick="deleteTask('${task.id}')"
+                                    class="bg-red-500 text-white px-4 py-2 rounded-lg shadow-md hover:bg-red-600 transition duration-200 flex items-center">
+                                    <i class="fa fa-trash mr-2"></i>Delete
+                                </button>
+                            </div>
+                        </div>
                     `;
                     taskListContent.appendChild(taskElement);
                 });
-            } catch (e) {
-                console.error("Task list update error:", e);
+
+                // Show empty state if no tasks
+                if (filteredTasks.length === 0) {
+                    taskListContent.innerHTML = `
+                        <div class="text-center text-gray-500 py-8">
+                            <i class="fa fa-tasks fa-3x mb-4"></i>
+                            <p>No tasks found</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                ErrorHandler.handle(error, 'Failed to update task list');
             }
+        }
+
+        function completeTask(taskId) {
+            try {
+                const taskIndex = tasks.findIndex(t => t.id === taskId);
+                if (taskIndex === -1) {
+                    throw new Error('Task not found');
+                }
+
+                tasks[taskIndex] = {
+                    ...tasks[taskIndex],
+                    completedTime: new Date().toISOString()
+                };
+
+                // Clear any scheduled notifications for this task
+                NotificationSystem.clearExistingNotifications();
+                
+                // Save updated tasks
+                DataManager.save('tasks', tasks);
+                updateTaskList();
+                updateDashboard();
+
+                // Show success message
+                showSuccessMessage('Task completed successfully!');
+            } catch (error) {
+                ErrorHandler.handle(error, 'Failed to complete task');
+            }
+        }
+
+        function deleteTask(taskId) {
+            try {
+                if (!confirm('Are you sure you want to delete this task?')) {
+                    return;
+                }
+
+                const taskIndex = tasks.findIndex(t => t.id === taskId);
+                if (taskIndex === -1) {
+                    throw new Error('Task not found');
+                }
+
+                // Remove task
+                tasks.splice(taskIndex, 1);
+                
+                // Clear notifications for this task
+                NotificationSystem.clearExistingNotifications();
+                
+                // Save updated tasks
+                DataManager.save('tasks', tasks);
+                updateTaskList();
+                updateDashboard();
+
+                // Show success message
+                showSuccessMessage('Task deleted successfully!');
+            } catch (error) {
+                ErrorHandler.handle(error, 'Failed to delete task');
+            }
+        }
+
+        function showSuccessMessage(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'fixed top-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50';
+            successDiv.textContent = message;
+            document.body.appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 3000);
         }
 
         function completeTask(taskId) {
@@ -1574,6 +1688,99 @@ document.addEventListener('DOMContentLoaded', async function() {
         initializeApp();
     } catch (error) {
         ErrorHandler.handle(error, 'Failed to initialize notification system');
+    }
+});
+</script>
+<script>
+// Add this inside the time-slot-definition div, after the existing form
+const AutoScheduler = {
+    strategies: {
+        priority: (tasks) => [...tasks].sort((a, b) => calculatePriorityScore(b) - calculatePriorityScore(a)),
+        deadline: (tasks) => [...tasks].sort((a, b) => {
+            if (!a.dueDate) return 1;
+            if (!b.dueDate) return -1;
+            return new Date(a.dueDate) - new Date(b.dueDate);
+        }),
+        effort: (tasks) => [...tasks].sort((a, b) => a.effort - b.effort)
+    },
+
+    calculateOptimalTimeSlots(tasks, workingHours) {
+        const totalEffort = tasks.reduce((sum, task) => sum + (task.effort || 0), 0);
+        const dailyHours = workingHours.end - workingHours.start;
+        const daysNeeded = Math.ceil(totalEffort / dailyHours);
+        
+        return {
+            daysNeeded,
+            dailyHours,
+            totalEffort,
+            suggestedBreaks: this.calculateBreaks(tasks.length, dailyHours)
+        };
+    },
+
+    calculateBreaks(taskCount, dailyHours) {
+        // Suggest breaks based on workload
+        const baseBreak = 15; // 15 minutes base break
+        const breakCount = Math.floor(dailyHours / 2); // Break every 2 hours
+        return Math.min(taskCount - 1, breakCount) * baseBreak;
+    },
+
+    autoSchedule(tasks, strategy = 'priority') {
+        try {
+            // Get current working hours
+            const start = TimeUtil.toDecimal(document.getElementById('start-time').value);
+            const end = TimeUtil.toDecimal(document.getElementById('end-time').value);
+
+            // Calculate optimal scheduling
+            const optimal = this.calculateOptimalTimeSlots(tasks, { start, end });
+            
+            // Update break time with suggested value
+            document.getElementById('break-time').value = optimal.suggestedBreaks;
+
+            // Sort tasks according to selected strategy
+            const sortedTasks = this.strategies[strategy](tasks.filter(t => !t.completedTime));
+            
+            // Show scheduling summary
+            this.showSchedulingSummary(optimal);
+
+            // Apply the schedule
+            return TimeSlotManager.allocateTimeSlots(sortedTasks, {
+                startTime: document.getElementById('start-time').value,
+                endTime: document.getElementById('end-time').value,
+                breakTime: optimal.suggestedBreaks
+            });
+        } catch (error) {
+            ErrorHandler.handle(error, 'Auto-scheduling failed');
+            return null;
+        }
+    },
+
+    showSchedulingSummary(optimal) {
+        const summary = `
+            <div class="text-sm">
+                <p>Total effort: ${optimal.totalEffort.toFixed(1)} hours</p>
+                <p>Days needed: ${optimal.daysNeeded}</p>
+                <p>Suggested breaks: ${optimal.suggestedBreaks} minutes</p>
+            </div>
+        `;
+
+        const summaryDiv = document.createElement('div');
+        summaryDiv.className = 'fixed bottom-4 right-4 bg-indigo-500 text-white p-4 rounded-lg shadow-lg z-50';
+        summaryDiv.innerHTML = summary;
+        document.body.appendChild(summaryDiv);
+        setTimeout(() => summaryDiv.remove(), 5000);
+    }
+};
+
+// Add event listener for auto-schedule button
+document.getElementById('auto-schedule-button')?.addEventListener('click', function() {
+    const strategy = document.getElementById('schedule-strategy').value;
+    const result = AutoScheduler.autoSchedule(tasks, strategy);
+    
+    if (result) {
+        tasks = [...result.scheduled, ...result.unscheduled];
+        DataManager.save('tasks', tasks);
+        updateTaskList();
+        updateDashboard();
     }
 });
 </script>
