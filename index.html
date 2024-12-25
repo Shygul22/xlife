@@ -1577,6 +1577,104 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 </script>
+<script>
+// Add service worker registration
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+                console.log('ServiceWorker registration successful');
+            })
+            .catch(error => {
+                console.error('ServiceWorker registration failed:', error);
+            });
+    });
+}
+</script>
+<script>
+// Update NotificationSystem with improved error handling and service worker support
+const NotificationSystem = {
+    // ...existing NotificationSystem code...
+
+    async scheduleTaskNotification(task) {
+        if (!('serviceWorker' in navigator)) {
+            throw new Error('Service Worker not supported');
+        }
+
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const startTime = this.parseScheduledTime(task.scheduledTime);
+            if (!startTime) return;
+
+            // Schedule warning notification
+            this.scheduleServiceWorkerNotification(registration, {
+                title: `⏰ Task Starting Soon: ${task.name}`,
+                body: `Starting in 5 minutes\n${task.scheduledTime}`,
+                tag: `warning-${task.id}`,
+                taskId: task.id,
+                type: 'warning',
+                showAt: startTime.getTime() - 5 * 60 * 1000
+            });
+
+            // Schedule start notification
+            this.scheduleServiceWorkerNotification(registration, {
+                title: `🎯 Task Start: ${task.name}`,
+                body: `Duration: ${task.effort} hours`,
+                tag: `start-${task.id}`,
+                taskId: task.id,
+                type: 'start',
+                showAt: startTime.getTime()
+            });
+
+        } catch (error) {
+            ErrorHandler.handle(error, 'Failed to schedule notification');
+        }
+    },
+
+    async scheduleServiceWorkerNotification(registration, options) {
+        const delay = options.showAt - Date.now();
+        if (delay <= 0) return;
+
+        const timeoutId = setTimeout(async () => {
+            try {
+                await registration.showNotification(options.title, {
+                    body: options.body,
+                    icon: '/favicon.ico',
+                    badge: '/favicon.ico',
+                    tag: options.tag,
+                    requireInteraction: true,
+                    data: {
+                        taskId: options.taskId,
+                        type: options.type,
+                        url: window.location.href
+                    }
+                });
+            } catch (error) {
+                ErrorHandler.handle(error, 'Failed to show notification');
+            }
+        }, delay);
+
+        this.storeTimeout(options.tag, timeoutId);
+    }
+};
+
+// Update TimeSlotManager with improved validation
+const TimeSlotManager = {
+    // ...existing TimeSlotManager code...
+
+    validate(startTime, endTime, breakTime) {
+        const start = this.parseTime(startTime);
+        const end = this.parseTime(endTime);
+        
+        if (!start || !end) throw new Error('Invalid time format');
+        if (start >= end) throw new Error('Start time must be before end time');
+        if (breakTime < 0) throw new Error('Break time cannot be negative');
+        if (end - start > 24) throw new Error('Time range cannot exceed 24 hours');
+        
+        return { start, end, breakTime };
+    }
+};
+</script>
 </body>
 
 </html>
