@@ -1,82 +1,92 @@
 <?php
-require_once 'config.php';
-session_start();
-$pageTitle = 'Register';
+require_once 'config/database.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = mysqli_real_escape_string($conn, $_POST['username']);
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $mobile = mysqli_real_escape_string($conn, $_POST['mobile']);
+    $username = trim($_POST['username']);
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
+    $confirm_password = trim($_POST['confirm_password']);
 
-    // Validate email format
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $error = "Invalid email format";
-    } elseif (!preg_match('/^[0-9]{10}$/', $mobile)) {
-        $error = "Invalid mobile number. Please enter a 10-digit number.";
+    if ($password !== $confirm_password) {
+        $error = "Passwords do not match!";
     } else {
-        // Check if username, email, or mobile already exists
-        $check_sql = "SELECT * FROM users WHERE username = ? OR email = ? OR mobile = ?";
-        $check_stmt = mysqli_prepare($conn, $check_sql);
-        mysqli_stmt_bind_param($check_stmt, "sss", $username, $email, $mobile);
-        mysqli_stmt_execute($check_stmt);
-        $result = mysqli_stmt_get_result($check_stmt);
-
-        if (mysqli_num_rows($result) > 0) {
-            $error = "Username, email, or mobile number already exists";
+        // Check if email already exists
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        
+        if ($stmt->rowCount() > 0) {
+            $error = "Email already exists!";
         } else {
-            $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-            $sql = "INSERT INTO users (username, email, mobile, password) VALUES (?, ?, ?, ?)";
-            $stmt = mysqli_prepare($conn, $sql);
-            mysqli_stmt_bind_param($stmt, "ssss", $username, $email, $mobile, $password);
-
-            if (mysqli_stmt_execute($stmt)) {
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+            
+            $stmt = $pdo->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+            if ($stmt->execute([$username, $email, $hashed_password])) {
                 header("Location: login.php");
                 exit();
             } else {
-                $error = "Registration failed. Please try again.";
+                $error = "Registration failed!";
             }
         }
     }
 }
-
-require_once 'includes/header.php';
 ?>
-    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
-        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Register</h2>
-        <?php if(isset($error)) echo "<p class='text-red-500 text-center mb-4'>$error</p>"; ?>
-        <form method="POST" action="register.php">
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Username:</label>
-                <input type="text" name="username" required 
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>">
-            </div>
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Email:</label>
-                <input type="email" name="email" required 
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
-            </div>
-            <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Mobile Number:</label>
-                <input type="tel" name="mobile" required 
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    value="<?php echo isset($_POST['mobile']) ? htmlspecialchars($_POST['mobile']) : ''; ?>">
-            </div>
-            <div class="mb-6">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Password:</label>
-                <input type="password" name="password" required minlength="6"
-                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline">
-            </div>
-            <button type="submit" 
-                class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                Register
-            </button>
-        </form>
-        <p class="text-center mt-4 text-sm">
-            Already have an account? 
-            <a href="login.php" class="text-blue-500 hover:text-blue-700">Login here</a>
-        </p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - ZenJourney</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-lg shadow-md w-96">
+            <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Register</h2>
+            <?php if (isset($error)): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    <?php echo $error; ?>
+                </div>
+            <?php endif; ?>
+            <form method="POST" action="">
+                <div class="mb-4"></div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+                        Username
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="username" name="username" type="text" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+                        Email
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="email" name="email" type="email" required>
+                </div>
+                <div class="mb-4"></div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                        Password
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="password" name="password" type="password" required>
+                </div>
+                <div class="mb-6"></div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="confirm_password">
+                        Confirm Password
+                    </label>
+                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        id="confirm_password" name="confirm_password" type="password" required>
+                </div>
+                <div class="flex items-center justify-between"></div>
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+                        type="submit">
+                        Register
+                    </button>
+                </div>
+                <div class="text-center mt-4"></div>
+                    <a href="login.php" class="text-blue-500 hover:text-blue-700">Already have an account? Login</a>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
-</html> 
+</html>
