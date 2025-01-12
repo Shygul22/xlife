@@ -1,3 +1,9 @@
+<?php
+if (!isset($_SESSION['user_id'])) {
+    header('Location: index.php?page=home');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
