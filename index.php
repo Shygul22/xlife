@@ -1,7 +1,15 @@
 <?php
-// Prevent direct file access
-if (!defined('ALLOW_ACCESS')) {
-    define('ALLOW_ACCESS', true);
+// Start session first, before any output
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Define constants and initialize
+define('ALLOW_ACCESS', true);
+
+// Initialize message handling
+if (!isset($_SESSION['messages'])) {
+    $_SESSION['messages'] = [];
 }
 
 // Block directory traversal attempts
@@ -22,10 +30,8 @@ if (!isset($_SERVER['HTTP_HOST']) || $_SERVER['HTTP_HOST'] !== 'localhost') {
     exit('Access Denied');
 }
 
-session_start();
-
 // Protected pages that require login
-$protected_pages = ['dashboard', 'tasks', 'profile'];
+$protected_pages = ['dashboard', 'tasks', 'profile', 'goals'];
 
 // Check if trying to access protected page without login
 if (in_array($_GET['page'] ?? 'home', $protected_pages) && !isset($_SESSION['user_id'])) {
@@ -39,7 +45,8 @@ $allowed_pages = [
     'dashboard' => 'includes/dashboard.php',
     'tasks' => 'includes/tasks.php',
     'profile' => 'includes/profile.php',
-    'auth' => 'includes/auth.php'
+    'auth' => 'includes/auth.php',
+    'goals' => 'includes/goals.php'
 ];
 
 $page = isset($_GET['page']) ? $_GET['page'] : 'home';
@@ -190,6 +197,14 @@ function shouldShowNavItem($page) {
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 </span>
                 <span class="ml-2 text-sm tracking-wide truncate">Profile</span>
+              </a>
+            </li>
+            <li>
+              <a href="index.php?page=goals" class="relative flex flex-row items-center h-11 focus:outline-none hover:bg-gray-50 text-gray-600 hover:text-gray-800 border-l-4 border-transparent hover:border-indigo-500 pr-6">
+                <span class="inline-flex justify-center items-center ml-4">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                </span>
+                <span class="ml-2 text-sm tracking-wide truncate">Goals</span>
               </a>
             </li>
             <li>

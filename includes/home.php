@@ -1,141 +1,207 @@
 <?php
 $isLoggedIn = isset($_SESSION['user_id']);
+
+// SEO Meta Data
+$metaTitle = "ZenJourney - Smart Task & Goal Management Platform";
+$metaDescription = "Transform your productivity with ZenJourney. An intuitive platform for managing tasks, tracking goals, and achieving personal growth. Start your journey to better productivity today.";
+ 
+// Add feature highlights data
+$features = [
+    [
+        'icon' => 'fas fa-brain',
+        'title' => 'AI-Powered Insights',
+        'description' => 'Smart task prioritization and personalized productivity recommendations'
+    ],
+    [
+        'icon' => 'fas fa-chart-line',
+        'title' => 'Progress Tracking',
+        'description' => 'Visual analytics and milestone tracking to keep you motivated'
+    ],
+    [
+        'icon' => 'fas fa-mobile-alt',
+        'title' => 'Mobile Friendly',
+        'description' => 'Access your tasks and goals from any device, anytime'
+    ]
+];
+
+// Add testimonials data
+$testimonials = [
+    [
+        'name' => 'Sarah Johnson',
+        'role' => 'Product Manager',
+        'image' => 'assets/images/testimonial1.jpg',
+        'quote' => 'ZenJourney transformed how I manage my projects.',
+        'company' => 'Tech Corp'
+    ],
+    // Add more testimonials...
+];
 ?>
 
 <?php if (!$isLoggedIn): ?>
+<!-- SEO Optimized Head Section -->
+<head>
+    <title><?php echo htmlspecialchars($metaTitle); ?></title>
+    <meta name="description" content="<?php echo htmlspecialchars($metaDescription); ?>">
+    <meta name="keywords" content="task management, productivity, goal tracking, personal development, time management">
+    <meta property="og:title" content="<?php echo htmlspecialchars($metaTitle); ?>">
+    <meta property="og:description" content="<?php echo htmlspecialchars($metaDescription); ?>">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>">
+</head>
+
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-    <!-- Hero Section -->
-    <div class="container mx-auto px-4 pt-20 pb-16">
-        <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-6xl font-bold text-gray-800 mb-8">
-                Transform Your Productivity with <span class="text-blue-600">ZenJourney</span>
-            </h1>
-            <p class="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
-                Experience a smarter way to manage tasks, track progress, and achieve your goals with our intuitive task management platform.
-            </p>
-            <div class="space-x-4 mb-16">
-                <a href="auth.php?action=register" 
-                   class="inline-block bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl">
-                    Start Free Trial
-                </a>
-                <a href="auth.php?action=login" 
-                   class="inline-block bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-colors shadow-lg hover:shadow-xl border-2 border-blue-600">
-                    Sign In
-                </a>
+    <!-- Enhanced Hero Section -->
+    <div class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 transform skew-y-3"></div>
+        <div class="relative container mx-auto px-4 pt-20 pb-16">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-8 leading-tight animate-fade-in">
+                    Transform Your Life with
+                    <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        ZenJourney
+                    </span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+                    Join thousands of successful individuals who use ZenJourney to track goals, 
+                    boost productivity, and achieve personal growth through mindful task management.
+                </p>
+                
+                <!-- Enhanced CTA Buttons -->
+                <div class="space-y-4 md:space-y-0 md:space-x-4 mb-16">
+                    <a href="auth.php?action=register" 
+                       class="inline-block bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 shadow-lg">
+                        Start Your Free Trial
+                        <span class="block text-sm font-normal">No Credit Card Required</span>
+                    </a>
+                    <a href="auth.php?action=login" 
+                       class="inline-block bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-lg border-2 border-blue-600">
+                        Sign In
+                    </a>
+                </div>
+
+                <!-- Trust Indicators -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto mb-20">
+                    <div class="text-center p-4 bg-white rounded-xl shadow-sm">
+                        <div class="text-3xl md:text-4xl font-bold text-blue-600 mb-2">2k+</div>
+                        <div class="text-gray-600 text-sm">Active Users</div>
+                    </div>
+                    <div class="text-center p-4 bg-white rounded-xl shadow-sm">
+                        <div class="text-3xl md:text-4xl font-bold text-blue-600 mb-2">10k+</div>
+                        <div class="text-gray-600 text-sm">Tasks Completed</div>
+                    </div>
+                    <div class="text-center p-4 bg-white rounded-xl shadow-sm">
+                        <div class="text-3xl md:text-4xl font-bold text-blue-600 mb-2">99%</div>
+                        <div class="text-gray-600 text-sm">Satisfaction Rate</div>
+                    </div>
+                    <div class="text-center p-4 bg-white rounded-xl shadow-sm">
+                        <div class="text-3xl md:text-4xl font-bold text-blue-600 mb-2">4.9★</div>
+                        <div class="text-gray-600 text-sm">User Rating</div>
+                    </div>
+                </div>
             </div>
 
-            <!-- Stats Section -->
-            <div class="grid grid-cols-3 gap-8 max-w-3xl mx-auto mb-20">
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-blue-600 mb-2">2k+</div>
-                    <div class="text-gray-600">Active Users</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-blue-600 mb-2">10k+</div>
-                    <div class="text-gray-600">Tasks Completed</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-4xl font-bold text-blue-600 mb-2">99%</div>
-                    <div class="text-gray-600">Satisfaction Rate</div>
+            <!-- Interactive Demo Preview -->
+            <div class="mt-12 relative">
+                <div class="bg-white rounded-lg shadow-2xl p-6 max-w-4xl mx-auto transform hover:-translate-y-1 transition-all duration-300">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="animate-pulse">
+                            <div class="h-8 bg-gray-200 rounded w-3/4"></div>
+                            <div class="mt-4 space-y-3">
+                                <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                                <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Features Section -->
-    <div class="bg-white py-20">
+    <!-- Enhanced Features Section -->
+    <div class="py-20 bg-white">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center mb-12">Why Choose ZenJourney?</h2>
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Powerful Features</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Everything you need to boost your productivity</p>
+            </div>
+            
             <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <!-- Existing feature cards with enhanced styling -->
-                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
+                <?php foreach ($features as $feature): ?>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+                            <i class="<?php echo $feature['icon']; ?> text-blue-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold mb-2"><?php echo $feature['title']; ?></h3>
+                        <p class="text-gray-600"><?php echo $feature['description']; ?></p>
                     </div>
-                    <h3 class="text-lg font-semibold mb-2">Smart Task Management</h3>
-                    <p class="text-gray-600">Organize tasks with priority levels, due dates, and custom categories.</p>
-                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
 
-                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
+    <!-- Interactive Feature Demo -->
+    <div class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold mb-6">See It In Action</h2>
+                        <div class="space-y-6">
+                            <div class="feature-demo cursor-pointer p-4 rounded-lg border border-transparent hover:border-blue-500 hover:bg-white transition-all duration-300">
+                                <h3 class="font-semibold mb-2">Task Management</h3>
+                                <p class="text-gray-600">Create, organize, and track tasks with ease</p>
+                            </div>
+                            <!-- Add more interactive features -->
+                        </div>
                     </div>
-                    <h3 class="text-lg font-semibold mb-2">Progress Analytics</h3>
-                    <p class="text-gray-600">Track your productivity with visual charts and detailed statistics.</p>
-                </div>
-
-                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
+                    <div class="bg-white p-6 rounded-lg shadow-lg" id="featurePreview">
+                        <!-- Dynamic feature preview content -->
                     </div>
-                    <h3 class="text-lg font-semibold mb-2">Time Tracking</h3>
-                    <p class="text-gray-600">Monitor time spent on tasks and optimize your workflow.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- How It Works Section -->
-    <div class="py-20">
+    <!-- Social Proof Section -->
+    <div class="py-20 bg-gray-50">
         <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center mb-12">How It Works</h2>
-            <div class="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl font-bold text-blue-600">1</span>
-                    </div>
-                    <h3 class="font-semibold mb-2">Sign Up</h3>
-                    <p class="text-gray-600">Create your free account in seconds</p>
-                </div>
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl font-bold text-green-600">2</span>
-                    </div>
-                    <h3 class="font-semibold mb-2">Add Tasks</h3>
-                    <p class="text-gray-600">Create and organize your tasks</p>
-                </div>
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl font-bold text-yellow-600">3</span>
-                    </div>
-                    <h3 class="font-semibold mb-2">Track Progress</h3>
-                    <p class="text-gray-600">Monitor your productivity</p>
-                </div>
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl font-bold text-purple-600">4</span>
-                    </div>
-                    <h3 class="font-semibold mb-2">Achieve Goals</h3>
-                    <p class="text-gray-600">Complete tasks and reach milestones</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Testimonials with Avatars -->
-    <div class="bg-white py-20">
-        <div class="container mx-auto px-4">
-            <h2 class="text-3xl font-bold text-center mb-12">What Our Users Say</h2>
+            <h2 class="text-3xl font-bold text-center mb-12">Trusted by Professionals</h2>
             <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                        <span class="text-2xl font-bold text-blue-600">J</span>
+                <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
+                    <div class="flex items-center mb-4">
+                        <img src="assets/images/testimonial1.jpg" alt="User Profile" class="w-12 h-12 rounded-full">
+                        <div class="ml-4">
+                            <h4 class="font-semibold">Sarah Johnson</h4>
+                            <p class="text-sm text-gray-600">Product Manager</p>
+                        </div>
                     </div>
-                    <p class="text-gray-600 italic mb-4">"ZenJourney has transformed how I manage my daily tasks."</p>
-                    <p class="font-semibold">John D.</p>
+                    <p class="text-gray-600 italic">"ZenJourney has completely transformed how I manage my projects and personal goals. The interface is intuitive and the progress tracking is invaluable."</p>
                 </div>
-                <!-- Add more testimonials as needed -->
+                <!-- Add more testimonials -->
             </div>
         </div>
     </div>
 
-    <!-- Final CTA -->
+    <!-- FAQ Section for SEO -->
+    <div class="py-20 bg-white">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-3xl font-bold text-center mb-12">Frequently Asked Questions</h2>
+            <div class="space-y-6">
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <h3 class="font-semibold text-lg mb-2">How does ZenJourney help with productivity?</h3>
+                    <p class="text-gray-600">ZenJourney combines task management, goal tracking, and progress analytics to help you stay focused and achieve more.</p>
+                </div>
+                <!-- Add more FAQs -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Final CTA -->
     <div class="py-20">
         <div class="container mx-auto px-4">
             <div class="max-w-4xl mx-auto text-center">
@@ -154,6 +220,7 @@ $isLoggedIn = isset($_SESSION['user_id']);
             </div>
         </div>
     </div>
+
 </div>
 
 <?php else: ?>
@@ -328,3 +395,83 @@ function formatTimeAgo(dateString) {
 }
 </script>
 <?php endif; ?>
+
+<!-- Structured Data for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "@type": "SaaSApplication",
+    "name": "ZenJourney",
+    "description": "<?php echo htmlspecialchars($metaDescription); ?>",
+    "applicationCategory": "Productivity Software",
+    "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+    }
+}
+</script>
+
+<!-- Add scroll-triggered animations -->
+<style>
+    .fade-in-up {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .fade-in-up.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+</style>
+
+<script>
+    // Scroll animations
+    document.addEventListener('DOMContentLoaded', function() {
+        const elements = document.querySelectorAll('.fade-in-up');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        elements.forEach(element => observer.observe(element));
+    });
+
+    // Feature demo interaction
+    const featureDemos = document.querySelectorAll('.feature-demo');
+    const previewContainer = document.getElementById('featurePreview');
+
+    featureDemos.forEach(demo => {
+        demo.addEventListener('click', function() {
+            featureDemos.forEach(d => d.classList.remove('border-blue-500', 'bg-white'));
+            this.classList.add('border-blue-500', 'bg-white');
+            
+            // Update preview content based on selected feature
+            updateFeaturePreview(this.querySelector('h3').textContent);
+        });
+    });
+
+    function updateFeaturePreview(feature) {
+        // Add dynamic preview content based on selected feature
+        const previews = {
+            'Task Management': `
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600">
+                        <span>Complete project proposal</span>
+                    </div>
+                    <!-- Add more preview items -->
+                </div>
+            `,
+            // Add more feature previews
+        };
+
+        previewContainer.innerHTML = previews[feature] || '';
+    }
+</script>
